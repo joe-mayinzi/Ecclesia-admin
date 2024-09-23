@@ -46,8 +46,6 @@ export default async function RootLayout({
           fontSans.variable,
         )}
       >
-        {/* {pathname === "prayer-wall" && <div className="background-prayer-wall" />} */}
-
         <SessionProvider session={session}>
           <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
             <div className="relative flex flex-col h-full bg-transparent">

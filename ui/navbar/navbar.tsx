@@ -106,9 +106,9 @@ export const Navbar = ({ session }: { session: Session | null }) => {
                 <div className="flex justify-between items-center space-x-2 gap-4">
                   {session.user.privilege_user ===
                     PrivilegesEnum.ADMIN_EGLISE && (
-                    <a href={"/church"}>
+                    <Link href={"/church"}>
                       <PlusCircleIcon className="w-6 cursor-pointer text-foreground" />
-                    </a>
+                    </Link>
                   )}
 
                   <ProfilUser session={session} />

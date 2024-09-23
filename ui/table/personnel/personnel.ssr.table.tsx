@@ -27,6 +27,8 @@ import { ChevronDownIcon, SearchIcon, VerticalDotsIcon } from "../../icons";
 import { Session } from "next-auth";
 import { StatusAcounteEnum } from "@/app/lib/config/enum";
 import { file_url } from "@/app/lib/request/request";
+import { AddPersonneMembreFormModal } from "@/ui/modal/form/personnel";
+import { ActionMembre } from "./action.ssr.table";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   actif: "success",
@@ -107,7 +109,6 @@ export default function GestionPersonnelSsrTableUI({ initData, session }: { sess
 
   const renderCell = React.useCallback((membre: Membres, columnKey: React.Key) => {
     const {user} = membre;
-    console.log(user);
     
     switch (columnKey) {
       case "nom":
@@ -117,7 +118,7 @@ export default function GestionPersonnelSsrTableUI({ initData, session }: { sess
             classNames={{
               description: "text-default-500",
             }}
-            description={user.telephone}
+            description={`@${user.username}`}
             name={`${user.nom} ${user.prenom}`}
           >
             {user.nom} {user.prenom}
@@ -140,7 +141,7 @@ export default function GestionPersonnelSsrTableUI({ initData, session }: { sess
         );
       case "actions":
         return (
-          <ActionMembre handleFindMemebres={handleFindMemebres} membre={membre} setMembres={setMembres} membres={user} />
+          <ActionMembre handleFindPersonneMemebres={handleFindPersonneMemebres} membre={membre} setMembres={setMembres} membres={user} />
         );
       default:
         return <></>;
@@ -161,7 +162,7 @@ export default function GestionPersonnelSsrTableUI({ initData, session }: { sess
     }
   }, []);
 
-  const handleFindMemebres = async () => {
+  const handleFindPersonneMemebres = async () => {
     // if (session) {
     //   const find = await findMembreApi(session.user.eglise.id_eglise);
     //   if (find) {
@@ -174,12 +175,12 @@ export default function GestionPersonnelSsrTableUI({ initData, session }: { sess
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="grid grid-cols-2 justify-between gap-3 mt-4">
           <Input
             isClearable
             classNames={{
               base: "w-full sm:max-w-[44%]",
-              inputWrapper: "border-1",
+              // inputWrapper: "border-1",
             }}
             placeholder="Rechercher par date..."
             size="sm"
@@ -240,7 +241,7 @@ export default function GestionPersonnelSsrTableUI({ initData, session }: { sess
                 ))}
               </DropdownMenu>
             </Dropdown>
-            {/* <AddMembreFormModal id_eglise={session.user.eglise.id_eglise} handleFindMemebres={handleFindMemebres} /> */}
+            <AddPersonneMembreFormModal session={session} handleFindPersonneMemebres={handleFindPersonneMemebres} />
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -357,67 +358,3 @@ export default function GestionPersonnelSsrTableUI({ initData, session }: { sess
 }
 
 
-export const ActionMembre = ({ membre, membres, setMembres, handleFindMemebres }: {
-  membre: any
-  setMembres: Dispatch<SetStateAction<any>>
-  membres: any[],
-  handleFindMemebres: any
-}) => {
-  const [openModal, setOpenModal] = useState<boolean>(false);
-  const [onBloqued, setOnBloqued] = useState<boolean>(false);
-  const [openAlert, setOpenAlert] = useState<boolean>(false);
-  const [alertMsg, setAlertMsg] = useState<string>("");
-  const [alertTitle, setAlertTitle] = useState<string>("");
-
-  const handleBloqueMembres = async () => {
-    // const update = await updateMembreApi({
-    //   status: membre.status === StatusAcounteEnum.ACTIF ? StatusAcounteEnum.INACTIF : StatusAcounteEnum.ACTIF
-    // }, membre.id);
-    // if (update.hasOwnProperty("statusCode") && update.hasOwnProperty("message")) {
-    //   setOpenAlert(true);
-    //   setAlertTitle("Erreur");
-    //   if (typeof update.message === "object") {
-    //     let message = '';
-    //     update.message.map((item: string) => message += `${item} \n`)
-    //     setAlertMsg(message);
-    //   } else {
-    //     setAlertMsg(update.message);
-    //   }
-    // } else {
-    //   handleFindMemebres();
-    //   setOpenModal(false);
-    //   setOpenAlert(true);
-    //   setAlertTitle("Modification réussi");
-    //   setAlertMsg("La mofidication de compte du membre a réussi.");
-    // }
-  }
-
-  return <div className="relative flex justify-end items-center gap-2">
-    <Dropdown className="bg-background border-1 border-default-200">
-      <DropdownTrigger>
-        <Button isIconOnly radius="full" size="sm" variant="light">
-          <VerticalDotsIcon className="text-default-400" />
-        </Button>
-      </DropdownTrigger>
-      <DropdownMenu>
-        <DropdownItem onClick={() => { setOpenModal(true) }}>Modifier</DropdownItem>
-        <DropdownItem onClick={() => { setOnBloqued(true) }}> {membre.status === StatusAcounteEnum.ACTIF ? "Bloquer" : "Débloquer"}</DropdownItem>
-      </DropdownMenu>
-    </Dropdown>
-    <Alert isOpen={openAlert} onOpen={() => { setOpenAlert(true) }} onClose={() => { setOpenAlert(false) }} alertBody={<p>{alertMsg}</p>} alertTitle={alertTitle} />
-    <DialogAction
-      isOpen={onBloqued}
-      onOpen={() => { setOnBloqued(true) }}
-      onClose={() => { setOnBloqued(false) }}
-      dialogBody={<p>Étes-vous sure de vouloir {membre.status === StatusAcounteEnum.ACTIF ? "bloquer" : "débloquer"} ce membre?</p>}
-      dialogTitle={"Bloquer le membres"}
-      action={handleBloqueMembres}
-    />
-    {/* <UpdateMembreFormModal
-      openModal={openModal}
-      setOpenModal={setOpenModal}
-      membre={membre}
-      handleFindMemebres={handleFindMemebres}
-    /> */}
-  </div>
-}
