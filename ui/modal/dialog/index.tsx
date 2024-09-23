@@ -46,7 +46,7 @@ export default function DialogAction({
               <Button color="danger" variant="light" onPress={onClose}>
                 Fermer
               </Button>
-              <Button color="primary" isLoading={pending} onPress={handlAction}>
+              <Button className="text-white" color="primary" isLoading={pending} onPress={handlAction}>
                 Confirmer
               </Button>
             </ModalFooter>

@@ -29,6 +29,7 @@ import { StatusAcounteEnum } from "@/app/lib/config/enum";
 import { file_url } from "@/app/lib/request/request";
 import { AddPersonneMembreFormModal } from "@/ui/modal/form/personnel";
 import { ActionMembre } from "./action.ssr.table";
+import { findManagementPersonnelApi } from "@/app/lib/actions/management/personnel/mange.person.req";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   actif: "success",
@@ -163,12 +164,12 @@ export default function GestionPersonnelSsrTableUI({ initData, session }: { sess
   }, []);
 
   const handleFindPersonneMemebres = async () => {
-    // if (session) {
-    //   const find = await findMembreApi(session.user.eglise.id_eglise);
-    //   if (find) {
-    //     setMembres(find);
-    //   }
-    // }
+    if (session) {
+      const find = await findManagementPersonnelApi(session.user.eglise.id_eglise);
+      if (find) {
+        setMembres(find);
+      }
+    }
 
   }
 

@@ -10,6 +10,7 @@ import { Users } from "@/app/lib/config/interface";
 import { json } from "stream/consumers";
 import { SearchIcon } from "@/ui/icons";
 import DialogAction from "../../dialog";
+import { addManagementPersonnelApi } from "@/app/lib/actions/management/personnel/mange.person.req";
 
 type SWCharacter = {
   name: string;
@@ -50,21 +51,24 @@ export function AddPersonneMembreFormModal({ handleFindPersonneMemebres, session
   const handleSubmit = async () => {
     if (userSelected) {
       setLoading(true);
-      const create = {}
+      const create = await addManagementPersonnelApi({userId: userSelected.id})
       setLoading(false);
-      // if (create.hasOwnProperty("statusCode") && create.hasOwnProperty("error")) {
-      //   setOpenAlert(true);
-      //   setAlertTitle("Erreur");
-      //   if (typeof create.message === "object") {
-      //     let message = '';
-      //     create.message.map((item: string) => message += `${item} \n`)
-      //     setAlertMsg(message);
-      //   } else {
-      //     setAlertMsg(create.message);
-      //   }
-      // } else {
-      //   handleFindMemebres();
-      // }
+      console.log(create);
+      
+      if (create.hasOwnProperty("statusCode") && (create.hasOwnProperty("error") || create.hasOwnProperty("error"))) {
+        setOpenAlert(true);
+        setAlertTitle("Message d'erreur");
+        if (typeof create.message === "object") {
+          let message = '';
+          create.message.map((item: string) => message += `${item} \n`)
+          setAlertMsg(message);
+        } else {
+          setAlertMsg(create.message);
+        }
+      } else {
+        setAlertTitle("Message")
+        handleFindPersonneMemebres();
+      }
     } else {
       setOpenAlert(true);
       setAlertTitle("Champs obligatoires");
@@ -73,8 +77,6 @@ export function AddPersonneMembreFormModal({ handleFindPersonneMemebres, session
   }
 
   const onSelectionChange = (key: string | number | null) => {
-    console.log(key);
-
     if (key !== null) {
       const user = list.items.find(item => item.id === parseInt(`${key}`));
       console.log(user);
@@ -84,15 +86,6 @@ export function AddPersonneMembreFormModal({ handleFindPersonneMemebres, session
         setUserSelected(user)
       }
     }
-
-    // setFieldState((prevState) => {
-    //   let selectedItem = prevState.items.find((option) => option.value === key);
-    //   return {
-    //     inputValue: selectedItem?.label || "",
-    //     selectedKey: key,
-    //     items: animals.filter((item) => startsWith(item.label, selectedItem?.label || "")),
-    //   };
-    // });
   };
 
   return <>
@@ -188,6 +181,7 @@ export function AddPersonneMembreFormModal({ handleFindPersonneMemebres, session
         action={handleSubmit}
       />
     }
+    <Alert isOpen={openAlert} onOpen={() => {setOpenAlert(true)}} onClose={() => {setOpenAlert(false)}} alertBody={<p className="text-center">{alertMsg}</p>} alertTitle={alertTitle} />
   </>
 }
 
