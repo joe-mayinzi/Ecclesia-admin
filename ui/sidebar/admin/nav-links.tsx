@@ -17,6 +17,7 @@ import {
   QuestionMarkCircleIcon,
   ChartBarSquareIcon,
   FilmIcon,
+  ArchiveBoxIcon
 } from "@heroicons/react/24/outline";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -145,6 +146,12 @@ const links = [
     privilege: PrivilegesEnum.ADMIN_EGLISE,
     href: "/church/management/financial",
     icon: UserGroupIcon,
+  },
+  {
+    name: "Gestion d'archivage",
+    privilege: PrivilegesEnum.ADMIN_EGLISE,
+    href: "/church/management/archive",
+    icon: ArchiveBoxIcon,
   },
   // { name: 'Notification', privilege: PrivilegesEnum.ADMIN_EGLISE , href: '/church/notification', icon: BellIcon },
 ];

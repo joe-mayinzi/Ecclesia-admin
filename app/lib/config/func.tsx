@@ -1,4 +1,11 @@
 import React from "react";
+import { FaFileArchive } from "react-icons/fa";
+import { PiImageLight } from "react-icons/pi";
+import { RxVideo } from "react-icons/rx";
+import { MdMusicVideo } from "react-icons/md";
+import { RiFileExcel2Line, RiFileWord2Line } from "react-icons/ri"
+import { ImFilePdf } from "react-icons/im";
+import { CiFileOn, CiImageOn } from "react-icons/ci";
 
 export function getRandomInt(n: number) {
   return Math.floor(Math.random() * n);
@@ -141,3 +148,67 @@ export function getRandomNumberBetween(x: number, y: number) {
 
   return Math.floor(Math.random() * (y - x + 1)) + x;
 }
+
+
+export function formatBytes(bytes: number) {
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+
+  if (bytes === 0) return '0 Bytes';
+
+  const i = Math.floor(Math.log(bytes) / Math.log(1024)); // Trouver l'indice correspondant à la bonne unité
+  const value = (bytes / Math.pow(1024, i)).toFixed(2);   // Convertir et arrondir à 2 décimales
+
+  return `${value} ${sizes[i]}`;
+}
+
+export function getFileIcon(fileName: string, sizeIcon: number = 24) {
+  const file = fileName.split('.').pop();
+  const extension = file && file.toLowerCase();
+
+  switch (extension) {
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'bmp':
+    case 'svg':
+      return <CiImageOn size={sizeIcon + 5} />; // Icône pour les images
+
+    case 'pdf':
+      return <ImFilePdf size={sizeIcon} />;   // Icône pour les fichiers PDF
+
+    case 'doc':
+    case 'docx':
+      return <RiFileWord2Line size={sizeIcon} />;  // Icône pour les fichiers Word
+
+    case 'xls':
+    case 'xlsx':
+      return <RiFileExcel2Line size={sizeIcon} />; // Icône pour les fichiers Excel
+
+    case 'mp3':
+    case 'wav':
+    case 'flac':
+    case 'aac':
+      return <MdMusicVideo size={sizeIcon} />; // Icône pour les fichiers audio
+
+    case 'mp4':
+    case 'avi':
+    case 'mov':
+    case 'wmv':
+    case 'mkv':
+    case 'webm':
+      return <RxVideo size={sizeIcon} />; // Icône pour les vidéos
+
+    case 'zip':
+    case 'rar':
+    case '7z':
+    case 'tar':
+    case 'gz':
+      return <FaFileArchive size={sizeIcon} />; // Icône pour les archives
+
+    default:
+      return <CiFileOn size={sizeIcon} />;   // Icône par défaut pour les autres fichiers
+  }
+}
+
+
