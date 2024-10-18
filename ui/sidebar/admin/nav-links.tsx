@@ -17,7 +17,8 @@ import {
   QuestionMarkCircleIcon,
   ChartBarSquareIcon,
   FilmIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  CalendarDaysIcon
 } from "@heroicons/react/24/outline";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -29,7 +30,10 @@ import { PrivilegesEnum } from "@/app/lib/config/enum";
 import { Accordion, AccordionItem } from "@nextui-org/react";
 import { VscLibrary } from "react-icons/vsc";
 import { PiVideoLight } from "react-icons/pi";
-
+import { GiTakeMyMoney } from "react-icons/gi";
+import { MdOutlineAdminPanelSettings } from "react-icons/md";
+import { GiGlobe } from "react-icons/gi";
+import { MdOutlineEventNote } from "react-icons/md";
 const links = [
   // { name: "Eglise", href: "/church", icon: HomeIcon },
   {
@@ -50,72 +54,21 @@ const links = [
     ]
   },
   {
-    name: "Annonces",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/annonce",
-    icon: MegaphoneIcon,
+    id: "culture",
+    name: "Culture",
+    icon: () => <GiGlobe size={24} />,
+    menu: true,
+    option: [
+      { name: "Etude biblique", privilege: PrivilegesEnum.FIDELE, href: "/church/bible-study", icon: BookOpenIcon },
+      { name: "Plan de lecture", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/plan-lecture", icon: MapIcon },
+      { name: "Quiz biblique", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/bible-quiz", icon: QuestionMarkCircleIcon, menu: false, },
+      { name: "Sondage & Question", privilege: PrivilegesEnum.FIDELE, href: "/church/sondage", icon: ChartBarSquareIcon },
+      { name: "Forum", privilege: PrivilegesEnum.FIDELE, href: "/church/forum", icon: PencilSquareIcon },
+      { name: "Témoignages", privilege: PrivilegesEnum.FIDELE, href: "/church/testimonials", icon: FilmIcon },
+    ]
   },
-  {
-    name: "Communiqués",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/communique",
-    icon: NewspaperIcon,
-  },
-  {
-    name: "Programmes",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/programme",
-    icon: Squares2X2Icon,
-  },
-  {
-    name: "Rendez-vous ",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/appointment",
-    icon: CalendarIcon,
-  },
-  {
-    name: "Etude biblique",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/church/bible-study",
-    icon: BookOpenIcon,
-  },
-  {
-    name: "Plan de lecture",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/plan-lecture",
-    icon: MapIcon,
-  },
-  {
-    name: "Quiz biblique",
-    href: "/church/bible-quiz",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    icon: QuestionMarkCircleIcon,
-    menu: false,
-  },
-  {
-    name: "Sondage & Question",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/church/sondage",
-    icon: ChartBarSquareIcon,
-  },
-  {
-    name: "Forum",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/church/forum",
-    icon: PencilSquareIcon,
-  },
-  {
-    name: "Témoignages",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/church/testimonials",
-    icon: FilmIcon,
-  },
-  {
-    name: "Abonnements",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/subscriptions",
-    icon: WalletIcon,
-  },
+
+
 
   // {
   //   name: 'Offrande & don',
@@ -124,35 +77,35 @@ const links = [
   //   icon: BanknotesIcon
   // },
   {
-    name: "Membres",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/membres",
-    icon: UserGroupIcon,
+    id: "administrative",
+    name: "Administration",
+    icon: () => <MdOutlineAdminPanelSettings size={24} />,
+    menu: true,
+    option: [
+      { name: "Annonces", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/annonce", icon: MegaphoneIcon },
+      { name: "Événement", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/management/event", icon: CalendarDaysIcon, },
+      { name: "Communiqués", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/communique", icon: NewspaperIcon, },
+      { name: "Programmes", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/programme", icon: Squares2X2Icon },
+      { name: "Rendez-vous", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/appointment", icon: CalendarIcon },
+      { name: "Membres", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/membres", icon: UserGroupIcon },
+      { name: "Personnel", privilege: PrivilegesEnum.FIDELE, href: "/church/management/personnel", icon: UserGroupIcon },
+      { name: "Archivage", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/management/archive", icon: ArchiveBoxIcon },
+    ]
   },
+
   {
-    name: "Gestion du personnel",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/church/management/personnel",
-    icon: UserGroupIcon,
+    id: "financial",
+    name: "Finance",
+    icon: () => <GiTakeMyMoney size={24} />,
+    menu: true,
+    option: [
+      { name: "Budget", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/management/financial/budget", icon: UserGroupIcon },
+      { name: "Recette", privilege: PrivilegesEnum.FIDELE, href: "/church/management/financial/income", icon: UserGroupIcon },
+      { name: "Depense", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/management/financial/expense", icon: ArchiveBoxIcon },
+      { name: "Abonnements", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/subscriptions", icon: WalletIcon, },
+    ]
   },
-  {
-    name: "Gestion administrative",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/management/administrative",
-    icon: UserGroupIcon,
-  },
-  {
-    name: "Gestion financière",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/management/financial",
-    icon: UserGroupIcon,
-  },
-  {
-    name: "Gestion d'archivage",
-    privilege: PrivilegesEnum.ADMIN_EGLISE,
-    href: "/church/management/archive",
-    icon: ArchiveBoxIcon,
-  },
+
   // { name: 'Notification', privilege: PrivilegesEnum.ADMIN_EGLISE , href: '/church/notification', icon: BellIcon },
 ];
 
@@ -163,7 +116,7 @@ export default function NavLinks() {
   return (
     <>
       {links.map((link, i) => {
-        const LinkIcon = link.icon;
+        const LinkIcon : any = link.icon;
 
         if (link.menu) {
           return (

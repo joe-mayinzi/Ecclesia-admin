@@ -17,6 +17,7 @@ import {
   QuestionMarkCircleIcon,
   ChartBarSquareIcon,
   RectangleGroupIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -120,6 +121,13 @@ const links = [
     privilege: PrivilegesEnum.FIDELE,
     href: "/prayer-wall",
     icon: RectangleGroupIcon,
+    menu: false,
+  },
+  {
+    name: "Événements",
+    privilege: PrivilegesEnum.FIDELE,
+    href: "/event",
+    icon: CalendarDaysIcon,
     menu: false,
   },
 ];

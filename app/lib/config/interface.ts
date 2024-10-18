@@ -568,6 +568,60 @@ export interface BibleHistorique {
   verse: string;
 }
 
+export interface ManagementEvent {
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: null;
+  id: number;
+  name: string;
+  description: string;
+  dateEvent: Date;
+  isBlocked: boolean;
+  adressMap: string;
+  totalPerson: number;
+  isFree: boolean;
+  price: number;
+  isCancel: null;
+  eglise: Eglise;
+}
+
+export interface ManagementBudget {
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: null;
+  id: number;
+  budgetLine: string;
+  description?: string;
+  period: Date;
+  amount: number;
+  eglise: Eglise;
+  expenses?: ManagementExpenses[];
+  income?: ManagementIncome[]; 
+}
+
+export interface ManagementIncome {
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: null;
+  id: number;
+  source: string;
+  description?: string;
+  amount: number;
+  method: string;
+  eglise: Eglise;
+  budget?: ManagementBudget
+}
+
+export interface ManagementExpenses {
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: null;
+  id: number;
+  amount: number;
+  motif: string;
+  eglise: Eglise;
+  budget?: ManagementBudget
+}
 // interface for get or find data paginated
 
 export interface CreateAbonnementDto {
