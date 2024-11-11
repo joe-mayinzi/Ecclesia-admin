@@ -12,7 +12,8 @@ export const api_url = `http://localhost:4000/api/`; // localhost
 
 // export const front_url = `http://localhost:3000/`;
 // export const front_url = `https://ecclesiabook.linked-solution.net/`;
-export const front_url = `https://ecclesiabook.org/`;
+// export const front_url = `https://ecclesiabook.org/`;
+export const front_url = `http://192.168.18.4:3000/`;
 
 export async function HttpRequest(
   path: string,

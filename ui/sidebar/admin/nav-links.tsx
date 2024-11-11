@@ -34,6 +34,9 @@ import { GiTakeMyMoney } from "react-icons/gi";
 import { MdOutlineAdminPanelSettings } from "react-icons/md";
 import { GiGlobe } from "react-icons/gi";
 import { MdOutlineEventNote } from "react-icons/md";
+import { PiPiggyBankLight } from "react-icons/pi";
+import { FaBalanceScaleLeft } from "react-icons/fa";
+import { PiPiggyBankBold } from "react-icons/pi";
 const links = [
   // { name: "Eglise", href: "/church", icon: HomeIcon },
   {
@@ -99,9 +102,9 @@ const links = [
     icon: () => <GiTakeMyMoney size={24} />,
     menu: true,
     option: [
-      { name: "Budget", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/management/financial/budget", icon: UserGroupIcon },
-      { name: "Recette", privilege: PrivilegesEnum.FIDELE, href: "/church/management/financial/income", icon: UserGroupIcon },
-      { name: "Depense", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/management/financial/expense", icon: ArchiveBoxIcon },
+      { name: "Prévision budgétaire", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/management/financial/budget", icon: FaBalanceScaleLeft },
+      { name: "Caisse", privilege: PrivilegesEnum.FIDELE, href: "/church/management/financial/income", icon: PiPiggyBankBold },
+      // { name: "Depense", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/management/financial/expense", icon: ArchiveBoxIcon },
       { name: "Abonnements", privilege: PrivilegesEnum.ADMIN_EGLISE, href: "/church/subscriptions", icon: WalletIcon, },
     ]
   },
@@ -134,8 +137,8 @@ export default function NavLinks() {
                         )}
                         href={item.href}
                       >
-                        <item.icon className="w-4 text-foreground" />
-                        <p className="text- text-foreground">{item.name}</p>
+                        <item.icon className="w-4" />
+                        <p>{item.name}</p>
                       </Link>
                     ))}
                   </div>

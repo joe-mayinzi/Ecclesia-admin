@@ -8,7 +8,7 @@ import DialogAction from "@/ui/modal/dialog";
 import { Dropdown, DropdownTrigger, Button, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import { UpdateEventFormModal } from "@/ui/modal/form/event";
 import { ManagementBudget } from "@/app/lib/config/interface";
-import { UpdateBudgetFormModal } from "@/ui/modal/form/finance/budget";
+import { SubPrevisionFormModal, UpdateBudgetFormModal } from "@/ui/modal/form/finance/budget";
 import { deleteManagementBudgetApi } from "@/app/lib/actions/management/finance/finance.req";
 
 export const ActionBudget = ({ budget, handleFindBudget }: {
@@ -54,7 +54,7 @@ export const ActionBudget = ({ budget, handleFindBudget }: {
         </Button>
       </DropdownTrigger>
       <DropdownMenu>
-        {/* <DropdownItem onClick={() => { setOpenModal(true) }}>Réservation</DropdownItem> */}
+        <DropdownItem onClick={() => { setOpenModal(true) }}>Détail</DropdownItem>
         <DropdownItem onClick={onOpen}>Modifier</DropdownItem>
         <DropdownItem onClick={() => { setOnBloqued(true) }}>Supprimer</DropdownItem>
       </DropdownMenu>
@@ -69,5 +69,6 @@ export const ActionBudget = ({ budget, handleFindBudget }: {
       action={handleDeleteManagementBudget}
     />
     <UpdateBudgetFormModal handleFindEvent={handleFindBudget} onClose={onClose} isOpen={isOpen} budget={budget} />
+    <SubPrevisionFormModal isOpen={openModal} onClose={() => { setOpenModal(false) }} budget={budget} />
   </div>
 }

@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { PrivilegesEnum } from "@/app/lib/config/enum";
 import { findEventByEgliseIdApi } from "@/app/lib/actions/management/event/event.req";
 import ManangmentBubgetPageClient from "./page.client";
-import { findManagementBudgetByEgliseIdApi } from "@/app/lib/actions/management/finance/finance.req";
+import { findManagementBudgetByEgliseIdApi, findManagementExpensesByEgliseIdApi } from "@/app/lib/actions/management/finance/finance.req";
 
 export default async function ManangmentBubgetPage() {
   const session = await auth();
@@ -15,9 +15,10 @@ export default async function ManangmentBubgetPage() {
   }
   let id_eglise = session.user.eglise.id_eglise;
   const find = await findManagementBudgetByEgliseIdApi(id_eglise);
+  const depenses = await findManagementExpensesByEgliseIdApi(id_eglise);
   console.log(find);
 
   return (
-    <ManangmentBubgetPageClient initData={find} session={session} />
+    <ManangmentBubgetPageClient initData={{budget: find, depenses}} session={session} />
   );
 }

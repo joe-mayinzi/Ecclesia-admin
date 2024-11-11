@@ -344,10 +344,10 @@ export function UpdateEventFormModal({ handleFindEvent, event, isOpen, onClose }
 }
 
 
-export function EventSubscribeFormModal({ event, isOpen, onClose }: any) {
+export function EventSubscribeFormModal({ event, isOpen, onClose }: { event: ManagementEvent, isOpen: boolean, onClose: () => void }) {
 
   const [pending, setPending] = useState<boolean>(false);
-  const [subcribe, setSubscribe] = useState<any[]>([])
+  const [subscribe, setSubscribe] = useState<any[]>(Array.isArray(event.subscribe) ? event.subscribe : [])
 
   const [openAlert, setOpenAlert] = useState<boolean>(false);
   const [alertMsg, setAlertMsg] = useState<string>("");
@@ -374,16 +374,14 @@ export function EventSubscribeFormModal({ event, isOpen, onClose }: any) {
                 <div className="flex justify-between">
                   <div className="items-center gap-4 border border-default p-4 rounded-lg">
                     <p>Total de reservation</p>
-                    <p>{subcribe.length} / {event.totalPerson}</p>
+                    <p>{event.totalSubscriptions} / {event.totalPerson}</p>
                   </div>
-
                   <div className="items-center gap-4 border border-default p-4 rounded-lg">
                     <p>Montant Total</p>
                     {event.isFree ?
                       <p>L'événement est gratuit</p>
                       :
-                      <p>{subcribe.length * event.price}</p>
-
+                      <p>{event.totalSubscriptions * event.price} USD</p>
                     }
                   </div>
                 </div>
@@ -395,8 +393,7 @@ export function EventSubscribeFormModal({ event, isOpen, onClose }: any) {
                       <TableColumn>Date de la reservation</TableColumn>
                     </TableHeader>
                     <TableBody>
-                      {subcribe.map((item, i) => {
-
+                      {subscribe.map((item, i) => {
                         return <TableRow key={i}>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell>{item.user.nom} {item.user.prenom}</TableCell>

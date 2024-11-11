@@ -22,8 +22,16 @@ export interface CreateManagementExpensesDto {
   budgetId?: number
 }
 
+type SubPrevisionBudgetDto = {
+  description: string,
+  qt: number,
+  unitPrice: number,
+  dateExpense: Date
+}
+
 
 export const createManagementBudgetApi = async (dto: CreateManagementBudgetDto) => await HttpRequest(`management-budgets`, "POST", dto);
+export const createManagementSubPrevisionBudgetApi = async (data: {dto: SubPrevisionBudgetDto[]}, budgetId: number) => await HttpRequest(`management-budgets/create/subprevision/${budgetId}`, "POST", data);
 export const createManagementIncomeApi = async (dto: CreateManagementIncomeDto) => await HttpRequest(`management-expenses-income/create/income`, "POST", dto);
 export const createManagementExpensesApi = async (dto: CreateManagementExpensesDto) => await HttpRequest(`management-expenses-income/create/expenses`, "POST", dto);
 

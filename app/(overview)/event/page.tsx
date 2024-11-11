@@ -9,7 +9,9 @@ export default async function EventPage() {
 
   const session = await auth()
 
-  const find = await findEventAllApi()
+  const find = await findEventAllApi(session ? true : false)
+  console.log(find);
+  
   return (
     <EventPageClient initData={find} session={session} />
   );

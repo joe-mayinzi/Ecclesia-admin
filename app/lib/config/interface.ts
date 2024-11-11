@@ -583,6 +583,26 @@ export interface ManagementEvent {
   price: number;
   isCancel: null;
   eglise: Eglise;
+  totalSubscriptions: number,
+  isSubscribe: boolean,
+  annonces: string[]
+  subscribe: {
+    createdAt: Date,
+    id: number,
+    uuid: string
+    isCancel: boolean,
+    isChecked: boolean,
+    paymentMothod: string,
+    paymentReference: string,
+  } | {
+    createdAt: Date,
+    id: number,
+    uuid: string
+    isCancel: boolean,
+    isChecked: boolean,
+    paymentMothod: string,
+    paymentReference: string,
+  }[] | null,
 }
 
 export interface ManagementBudget {
@@ -596,7 +616,7 @@ export interface ManagementBudget {
   amount: number;
   eglise: Eglise;
   expenses?: ManagementExpenses[];
-  income?: ManagementIncome[]; 
+  income?: ManagementIncome[];
 }
 
 export interface ManagementIncome {
@@ -638,3 +658,14 @@ interface User {
   profil: string | null;
   eglise: Eglise;
 }
+
+export interface TransactionCaisse {
+  // "Approvisionne" | "Depense";
+  typeTransaction: string
+  description: string;
+  sourceApprov: string | null;
+  approvCaisse: number | null;
+  depense: number | null;
+  createdAt: Date;  // La date est convertie en un objet Moment
+}
+

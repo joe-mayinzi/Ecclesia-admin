@@ -1,7 +1,7 @@
 "use client";
 
 import { ManagementEvent } from "@/app/lib/config/interface";
-import { file_url } from "@/app/lib/request/request";
+import { file_url, front_url } from "@/app/lib/request/request";
 import { Button, Image, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/react";
 import moment from "moment";
 import { Session } from "next-auth";
@@ -22,7 +22,7 @@ export default function EventByIdPageClient({ initData, session }: { initData: M
   {/* https://api.maxicashme.com/PayEntryPost Test */ }
   const MerchantID = "81a1c6e9175943d19a72250354871790";
   const MerchantPassword = "d8938074afca416398e5daca220e57d1";
-  const url_back = `http://172.20.10.9:3000/event/subcribe/${initData.id}/`;
+  const url_back = `${front_url}event/subcribe/${initData.id}/`;
   const gatWay = "https://api-testbed.maxicashapp.com/PayEntryPost" //Test
 
   return <div>

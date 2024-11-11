@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -15,29 +15,37 @@ import {
   Pagination,
   Selection,
   ChipProps,
-  SortDescriptor
+  SortDescriptor,
+  DatePicker,
+  Card,
 } from "@nextui-org/react";
 import { columns, statusOptions } from "./data";
 import { capitalize } from "@/app/lib/config/func";
 import { Session } from "next-auth";
-import { ManagementBudget } from "@/app/lib/config/interface";
+import { ManagementBudget, ManagementExpenses } from "@/app/lib/config/interface";
 import { SearchIcon, ChevronDownIcon } from "@/ui/icons";
 import moment from "moment";
 import { ActionBudget } from "./action.ssr.table";
 import CreateBudgetFormModal from "@/ui/modal/form/finance/budget";
 import { findManagementBudgetByEgliseIdApi } from "@/app/lib/actions/management/finance/finance.req";
+import { useReactToPrint } from "react-to-print";
+import { DateValue, parseDate, } from "@internationalized/date";
+import { IoReload } from "react-icons/io5";
+import { BudgetReportingPrint } from "@/ui/print/print.financial";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   actif: "success",
   inactif: "danger",
 };
 
-const INITIAL_VISIBLE_COLUMNS = ["budgetLine", "period", "amount", "income", "expenses", "description", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["budgetLine", "period", "amount", "expenses", "description", "actions"];
 
 
-export default function FinanceBudgetSsrTableUI({ initData, session }: { session: Session, initData: ManagementBudget[] }) {
-  const [events, setEvents] = useState<ManagementBudget[]>(initData)
+export default function FinanceBudgetSsrTableUI({ initData, session }: { session: Session, initData: { budget: ManagementBudget[], depenses: ManagementExpenses[] } }) {
+  const [events, setEvents] = useState<ManagementBudget[]>(initData.budget)
   const [day, setDay] = useState<any[]>([]);
+  const dt = moment(initData.budget[initData.budget.length - 1].period.toString()).format("YYYY-MM-DD").toString();
+  const dte = moment(initData.budget[0].period.toString()).format("YYYY-MM-DD").toString();
 
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([1, 2]));
@@ -48,6 +56,12 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
     column: "status",
     direction: "ascending",
   });
+  const [totalBudget, setTotalBudget] = useState<number>(0);
+  const [budgetMonth, setBudgetMonth] = useState<number>(0);
+  const [budgetAccomplishedTotal, setBudgetAccomplishedTotal] = useState<number>(0);
+  const [budgetAaccomplishedMonth, setBudgetAaccomplishedMonth] = useState<number>(0);
+  const [dateBigin, setDatBigin] = useState<DateValue>(parseDate(dt));
+  const [dateEnd, setDateEnd] = React.useState<DateValue>(parseDate(dte));
 
   type Budgets = ManagementBudget
 
@@ -56,6 +70,10 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
   const pages = Math.ceil(events.length / rowsPerPage);
 
   const hasSearchFilter = Boolean(filterValue);
+
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({ contentRef: componentRef });
 
   const headerColumns = React.useMemo(() => {
     if (visibleColumns === "all") return columns;
@@ -66,12 +84,11 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
   const filteredItems = React.useMemo(() => {
     let filteredEvents = [...events];
 
-    if (hasSearchFilter) {
-      filteredEvents = filteredEvents.filter((event) =>
-        event.budgetLine.toLowerCase().includes(filterValue.toLowerCase())
-
-      );
-    }
+    // if (hasSearchFilter) {
+    //   filteredEvents = filteredEvents.filter((event) =>
+    //     event.budgetLine.toLowerCase().includes(filterValue.toLowerCase())
+    //   );
+    // }
 
     // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
     //   filteredEvents = filteredEvents.filter((event) =>
@@ -79,8 +96,24 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
     //   );
     // }
 
+    if (dateBigin || dateEnd) {
+      console.log("date change");
+ 
+      let startDate = moment(dateBigin.toString(), "DD-MM-YYYY")
+      let endDate = moment(dateEnd.toString(), "DD-MM-YYYY")
+      console.log("startDate", startDate);
+      console.log("endDate",endDate);
+      filteredEvents = filteredEvents.filter((item) => {
+        const d = moment(item.period, "DD-MM-YYYY");
+        if (d.isBetween(startDate, endDate, "month", "[]")) {
+          console.log("error date all");
+
+          return d.isBetween(startDate, endDate, "month", "[]")
+        }
+      })
+    }
     return filteredEvents;
-  }, [events, filterValue, statusFilter]);
+  }, [events, dateBigin, dateEnd]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -152,6 +185,68 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
     }
   }, []);
 
+  const handelStatistique = useCallback(() => {
+    if (dateBigin || dateEnd) {
+      let total_budget = 0
+      let budget_month = 0
+      let budget_accomplished_total = 0
+      let budget_accomplished_month = 0
+      let startDate = moment(dateBigin.toString())
+      let endDate = moment(dateEnd.toString())
+      console.log("Filtre par date");
+
+      initData.budget.map((item) => {
+        total_budget += item.amount || 0;
+        if (moment(item.period).isBetween(startDate, endDate, "month", "[]")) {
+          budget_month += item.amount || 0
+        }
+      });
+
+      if (initData.depenses) {
+        for (let i = 0; i < initData.depenses.length; i++) {
+          const e = initData.depenses[i];
+          budget_accomplished_total += e.amount
+          if (moment(e.createdAt).isBetween(startDate, endDate, "month", "[]")) {
+            budget_accomplished_month += e.amount
+          }
+        }
+      }
+
+      setTotalBudget(total_budget)
+      setBudgetMonth(budget_month)
+      setBudgetAccomplishedTotal(budget_accomplished_total)
+      setBudgetAaccomplishedMonth(budget_accomplished_month)
+    }
+  }, [dateBigin , dateEnd]);
+
+  const handelIntialeFilter = useCallback(() => {
+    let total_budget = 0
+    let budget_month = 0
+    let budget_accomplished_total = 0
+    let budget_accomplished_month = 0
+    let format = moment().format("YYYY-MM");
+    initData.budget.map((item) => {
+      total_budget += item.amount || 0;
+      if (moment(item.period).format("YYYY-MM") === format) {
+        budget_month += item.amount || 0
+      }
+    })
+
+    if (initData.depenses) {
+      for (let i = 0; i < initData.depenses.length; i++) {
+        const e = initData.depenses[i];
+        budget_accomplished_total += e.amount
+        if (moment(e.createdAt).format("YYYY-MM") === format) {
+          budget_accomplished_month += e.amount
+        }
+      }
+    }
+    setTotalBudget(total_budget)
+    setBudgetMonth(budget_month)
+    setBudgetAccomplishedTotal(budget_accomplished_total)
+    setBudgetAaccomplishedMonth(budget_accomplished_month)
+  }, [sortedItems]);
+
   const handleFindBudget = async () => {
     if (session) {
       const find = await findManagementBudgetByEgliseIdApi(session.user.eglise.id_eglise);
@@ -164,78 +259,62 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 justify-between gap-3 mt-4">
-          <Input
-            isClearable
-            fullWidth
-            classNames={{
-              base: "w-full sm:max-w-[44%]",
-              // inputWrapper: "border-1",
-            }}
-            placeholder="Rechercher par date..."
-            size="sm"
-            startContent={<SearchIcon className="text-default-300" />}
-            value={filterValue}
-            variant="bordered"
-            onClear={() => setFilterValue("")}
-            onValueChange={onSearchChange}
-          />
-          <div className="flex justify-end gap-3">
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<ChevronDownIcon className="text-small" />}
-                  size="sm"
-                  variant="flat"
-                >
-                  Status
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={statusFilter}
-                selectionMode="none"
-                onSelectionChange={setStatusFilter}
-              >
-                {statusOptions.map((status) => (
-                  <DropdownItem key={status.name} className="capitalize">
-                    {capitalize(status.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<ChevronDownIcon className="text-small" />}
-                  size="sm"
-                  variant="flat"
-                >
-                  Columns
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={visibleColumns}
-                selectionMode="none"
-                onSelectionChange={setVisibleColumns}
-              >
-                {columns.map((column) => (
-                  <DropdownItem key={column.uid} className="capitalize">
-                    {capitalize(column.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
+        <div className="grid grid-cols-1 items-center mt-4">
+          <div className="flex gap-2 w-fill">
+            <DatePicker
+              fullWidth
+              size="sm"
+              variant="bordered"
+              // className="max-w-[284px]"
+              label="Date de debut"
+              value={dateBigin}
+              onChange={setDatBigin}
+            />
+            <DatePicker
+              fullWidth
+              size="sm"
+              variant="bordered"
+              // className="max-w-[284px]"
+              label="Date de fin"
+              value={dateEnd}
+              onChange={setDateEnd}
+            />
+          </div>
+          <div className="flex gap-2 items-center justify-start mt-4  md:justify-end">
+            <Button onClick={handelStatistique} variant="flat" size="sm">
+              <SearchIcon style={{ fontSize: 16 }} />
+              Filtrer par date
+            </Button>
+            <Button onClick={handelIntialeFilter} size="sm" variant="flat">
+              <IoReload size={17} />
+              Réinitialiser
+            </Button>
+            <Button size="sm" variant="flat" onClick={() => { handlePrint() }}>
+              Imprimer
+            </Button>
             <CreateBudgetFormModal handleFindBudget={handleFindBudget} />
           </div>
         </div>
+        <div className="grid grid-cols-4 items-center gap-4 mt-4">
+          <Card className="p-4">
+            <p className="text-md font-medium">Total de budget</p>
+            <p className="text-md font-medium">$ {totalBudget}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-md font-medium">Budget réaliser</p>
+            <p className="text-md font-medium">$ {budgetAccomplishedTotal}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-md font-medium">Budget du mois</p>
+            <p className="text-md font-medium">$ {budgetMonth}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-md font-medium">Budget du mois réaliser</p>
+            <p className="text-md font-medium">$ {budgetAaccomplishedMonth}</p>
+          </Card>
+        </div>
         <div className="flex justify-between items-center">
-          <span className="text-default-400 text-small">Total {events.length} événement</span>
+          <span className="text-default-400 text-small">Total {events.length} bubget</span>
           <label className="flex items-center text-default-400 text-small">
             Lignes par page:
             <select
@@ -248,6 +327,7 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
             </select>
           </label>
         </div>
+
       </div>
     );
   }, [
@@ -258,7 +338,17 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
     onRowsPerPageChange,
     hasSearchFilter,
     day,
-    setDay
+    setDay,
+    dateBigin,
+    dateEnd,
+    setDatBigin,
+    setDateEnd,
+    handelIntialeFilter,
+    handelStatistique,
+    totalBudget,
+    budgetMonth,
+    budgetAccomplishedTotal,
+    budgetAaccomplishedMonth
   ]);
 
   const bottomContent = React.useMemo(() => {
@@ -306,7 +396,7 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
 
   useEffect(() => {
     console.log(events);
-
+    handelIntialeFilter()
     // events.map((item: ManagementEvent) => {
     //   if (item.isCancel !== null) {
     //     console.log("isCancel", new Set([item.id]));
@@ -317,46 +407,59 @@ export default function FinanceBudgetSsrTableUI({ initData, session }: { session
   }, [events])
 
   return (
-    <Table
-      isCompact={false}
-      removeWrapper
-      aria-label="Example table with custom cells, pagination and sorting"
-      bottomContent={bottomContent}
-      bottomContentPlacement="outside"
-      checkboxesProps={{
-        classNames: {
-          wrapper: "max-h-[382px] after:bg-foreground after:text-background text-background",
-        },
-      }}
-      classNames={classNames}
-      selectedKeys={selectedKeys}
-      selectionMode="multiple"
-      sortDescriptor={sortDescriptor}
-      defaultSelectedKeys={selectedKeys}
-      topContent={topContent}
-      topContentPlacement="outside"
-      onSortChange={setSortDescriptor}
-      color={"danger"}
-    >
-      <TableHeader columns={headerColumns}>
-        {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}
-            allowsSorting={column.sortable}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody emptyContent={"Aucun événement trouvé"} items={sortedItems}>
-        {(item: Budgets) => (
-          <TableRow key={item.id}>
-            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <main>
+      <Table
+        isCompact={false}
+        removeWrapper
+        aria-label="Example table with custom cells, pagination and sorting"
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        checkboxesProps={{
+          classNames: {
+            wrapper: "max-h-[382px] after:bg-foreground after:text-background text-background",
+          },
+        }}
+        classNames={classNames}
+        selectedKeys={selectedKeys}
+        selectionMode="multiple"
+        sortDescriptor={sortDescriptor}
+        defaultSelectedKeys={selectedKeys}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSortChange={setSortDescriptor}
+        color={"danger"}
+      >
+        <TableHeader columns={headerColumns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+              allowsSorting={column.sortable}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={"Aucun événement trouvé"} items={sortedItems}>
+          {(item: Budgets) => (
+            <TableRow key={item.id}>
+              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      <div className="hidden">
+        <BudgetReportingPrint
+          filter={{
+            keyWord: "",
+            dateDebutFilter: new Date(dateBigin.toString()),
+            dateFinFilter: new Date(dateEnd.toString())
+          }}
+          data_print={initData}
+          ref={componentRef}
+        />
+      </div>
+    </main>
   );
 }
 
