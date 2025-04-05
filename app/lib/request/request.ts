@@ -5,7 +5,7 @@ export const file_url = `https://d31uetu06bkcms.cloudfront.net/`;
 // export const api_url = `http://192.168.0.157:4000/api/`; // HOMEBOX ORANGE
 // export const api_url = `http://172.20.10.2:4000/api/`; // IP IPHONE
 
-export const api_url = `http://localhost:4000/api/`; // localhost
+export const api_url = `https://ecclesiabook.org/EhE7Aiheobj6gcBCZUsTkA5KliDrWvM_API/`; // localhost
 
 // export const api_url = `https://ecclesiabook.org/api/`;
 // export const api_url = `https://ecclesiabook.org/api_test/`;
@@ -18,7 +18,7 @@ export const front_url = `http://192.168.18.4:3000/`;
 export async function HttpRequest(
   path: string,
   method: string = "GET",
-  body?: any,
+  body?: any
 ) {
   const session = await auth();
 
@@ -57,7 +57,7 @@ export async function HttpRequest(
 export async function AuthHttpRequest(
   path: string,
   method: string,
-  data?: any,
+  data?: any
 ) {
   try {
     // const url = new URL(`${api_url}${path}`);
@@ -83,14 +83,14 @@ export async function RequestApi(
   path: string,
   method: string,
   data?: any,
-  params?: any,
+  params?: any
 ) {
   try {
     const url = new URL(path);
 
     if (params) {
       Object.keys(params).forEach((key) =>
-        url.searchParams.append(key, params[key]),
+        url.searchParams.append(key, params[key])
       );
     }
 

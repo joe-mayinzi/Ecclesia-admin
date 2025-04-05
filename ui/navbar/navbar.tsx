@@ -101,7 +101,7 @@ export const Navbar = ({ session }: { session: Session | null }) => {
           <NavbarItem className="lg:flex">{searchInput}</NavbarItem>
 
           <NavbarItem className="lg:flex ">
-            {session && session.user ? (
+            {/* {session && session.user ? (
               <>
                 <div className="flex justify-between items-center space-x-2 gap-4">
                   {session.user.privilege_user ===
@@ -114,13 +114,13 @@ export const Navbar = ({ session }: { session: Session | null }) => {
                   <ProfilUser session={session} />
                 </div>
               </>
-            ) : (
-              <>
-                <Button as={Link} href="/api/auth/signin" variant="bordered">
-                  Se connecter
-                </Button>
-              </>
-            )}
+            ) : ( */}
+            <>
+              <Button as={Link} href="/api/auth/signin" variant="bordered">
+                Se connecter
+              </Button>
+            </>
+            {/* )} */}
           </NavbarItem>
         </NavbarContent>
 
@@ -192,7 +192,6 @@ export const Navbar = ({ session }: { session: Session | null }) => {
             <NavbarMenuItem>
               <NavLinks />
             </NavbarMenuItem>
-
           </div>
         </NavbarMenu>
       </NextUINavbar>

@@ -27,14 +27,36 @@ import Link from "next/link";
 import { VscLibrary } from "react-icons/vsc";
 import { FaChurch } from "react-icons/fa";
 import { PiVideoLight } from "react-icons/pi";
+import { GrUserAdmin } from "react-icons/gr";
 
 import { title } from "../primitives";
 
 import { PrivilegesEnum } from "@/app/lib/config/enum";
 import { Accordion, AccordionItem } from "@nextui-org/react";
+import { IoMdAdd } from "react-icons/io";
 
 const links = [
-  { name: "Accueil", href: "/", icon: HomeIcon, menu: false },
+  { name: "Dashboard", href: "/", icon: HomeIcon, menu: false },
+  {
+    id: "admin",
+    name: "Administration",
+    icon: () => <GrUserAdmin size={24} />,
+    menu: true,
+    option: [
+      {
+        name: "Liste des admins",
+        href: "/admin",
+        icon: GrUserAdmin,
+        menu: false,
+      },
+      {
+        name: "Ajouter un admin",
+        href: "/admin/create",
+        icon: IoMdAdd,
+        menu: false,
+      },
+    ],
+  },
   {
     name: "Églises",
     href: "/list-church",
@@ -62,12 +84,7 @@ const links = [
       },
     ],
   },
-  // {
-  //   name: "Bible",
-  //   privilege: PrivilegesEnum.FIDELE,
-  //   href: "/bible",
-  //   icon: BookOpenIcon,
-  // },
+
   {
     id: "bible_lect",
     name: "Bible et Plan de lecture",
@@ -201,15 +218,20 @@ export default function NavLinks() {
           return (
             <div key={i}>
               <Accordion className="rounded-md" variant="light">
-                <AccordionItem aria-label={link.name} startContent={<LinkIcon className="w-6" />} title={<p className="text-sm">{link.name}</p>}>
+                <AccordionItem
+                  aria-label={link.name}
+                  startContent={<LinkIcon className="w-6" />}
+                  title={<p className="text-sm">{link.name}</p>}
+                >
                   <div style={{ paddingLeft: 20 }}>
                     {link.option?.map((item: any, e: number) => (
                       <Link
                         key={`${link.name}-${e}-${item.name}`}
-                        className={clsx(`flex h-48 grow gap-2 rounded-md p-3 mt-3 text-sm font-medium hover:bg-default-100`,
+                        className={clsx(
+                          `flex h-48 grow gap-2 rounded-md p-3 mt-3 text-sm font-medium hover:bg-default-100`,
                           {
                             "bg-primary text-white": pathname === item.href,
-                          },
+                          }
                         )}
                         href={item.href}
                       >
@@ -230,7 +252,7 @@ export default function NavLinks() {
                 "flex grow gap-2 rounded-md p-3 mt-3 text-sm font-medium text-neutral-50 hover:bg-default-100 md:flex-none md:justify-start md:p-2 md:px-3",
                 {
                   "bg-primary text-white": pathname === link.href,
-                },
+                }
               )}
               href={link.href}
             >
@@ -275,7 +297,7 @@ export function NavAvartLinks() {
                 "flex-grow h-36 gap-2 p-1 font-medium text-neutral-50 hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3",
                 {
                   "bg-primary": pathname === `/@${link.username_eglise}`,
-                },
+                }
               )}
               href={`/@${link.username_eglise}`}
             >
@@ -310,7 +332,7 @@ export function NavOptionLinks() {
               "flex h-48 grow gap-2 rounded-md p-3 mt-3 text-sm font-medium text-neutral-50 hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3",
               {
                 "bg-primary": pathname === link.href,
-              },
+              }
             )}
             href={link.href}
           >
@@ -336,7 +358,7 @@ export function NavFooterLinks() {
               "text-justify text-sm font-medium text-neutral-50 hover:bg-sky-100 md:flex-none md:justify-start",
               {
                 "bg-primary": pathname === link.href,
-              },
+              }
             )}
             href={link.href}
           >
@@ -345,7 +367,7 @@ export function NavFooterLinks() {
         );
       })}
       <p>
-        © 2023 Ecclesiabook <br /> Tous droits réservés
+        © 2025 Ecclesiabook <br /> Tous droits réservés
       </p>
     </>
   );
