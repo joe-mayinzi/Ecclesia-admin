@@ -27,14 +27,15 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
 
   const {
     Component,
-    slots,
     isSelected,
     getBaseProps,
     getInputProps,
     getWrapperProps,
   } = useSwitch({
     isSelected: theme === "light" || isSSR,
-    "aria-label": `Switch to ${theme === "light" || isSSR ? "dark" : "light"} mode`,
+    "aria-label": `Switch to ${
+      theme === "light" || isSSR ? "dark" : "light"
+    } mode`,
     onChange,
   });
 
@@ -44,31 +45,21 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
         className: clsx(
           "px-px transition-opacity hover:opacity-80 cursor-pointer",
           className,
-          classNames?.base,
+          classNames?.base
         ),
       })}
     >
       <VisuallyHidden>
         <input {...getInputProps()} />
       </VisuallyHidden>
+
       <div
         {...getWrapperProps()}
-        className={slots.wrapper({
-          class: clsx(
-            [
-              "w-auto h-auto",
-              "bg-transparent",
-              "rounded-lg",
-              "flex items-center justify-center",
-              "group-data-[selected=true]:bg-transparent",
-              "!text-default-500",
-              "pt-px",
-              "px-0",
-              "mx-0",
-            ],
-            classNames?.wrapper,
-          ),
-        })}
+        className={clsx(
+          "w-auto h-auto bg-transparent rounded-lg flex items-center justify-center",
+          "group-data-[selected=true]:bg-transparent !text-default-500 pt-px px-0 mx-0",
+          classNames?.wrapper
+        )}
       >
         {!isSelected || isSSR ? (
           <SunFilledIcon size={22} />

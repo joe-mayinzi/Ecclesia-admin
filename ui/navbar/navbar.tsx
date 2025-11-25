@@ -31,14 +31,22 @@ import { MailIcon } from "@/ui/icons";
 import { PrivilegesEnum } from "@/app/lib/config/enum";
 import { SearchIcon } from "@/ui/icons";
 import { ThemeSwitch } from "@/ui/theme-switch";
+import dynamic from "next/dynamic";
+import { signOut } from "next-auth/react";
 
 export const Navbar = ({ session }: { session: Session | null }) => {
+  console.log(session);
+  
   const searchParams = useSearchParams();
   const s_query = searchParams.get("s_query");
 
   // const { data: notifications } = useQuery("postsData", {
   //   queryFn: async () => await getUserNotifications(),
   // });
+
+  const ThemeSwitchWrapper = dynamic(() => import("../../components/ThemeSwitchWrapper"), {
+  ssr: false, // ⛔ empêche le rendu serveur
+  });
 
   const searchInput = (
     <form action={`/search`} className="col-span-8 rounded-md">
@@ -95,33 +103,28 @@ export const Navbar = ({ session }: { session: Session | null }) => {
           justify="center"
         >
           <NavbarItem>
-            <ThemeSwitch />
+            {/* <ThemeSwitchWrapper/> */}
           </NavbarItem>
 
           <NavbarItem className="lg:flex">{searchInput}</NavbarItem>
+        <NavbarItem className="lg:flex">
+          {session && session.user ? (
+            <Button
+              variant="bordered"
+              onPress={() => {
+                // Redirection côté client vers l'API de déconnexion
+                window.location.href = "/api/auth/signout";
+              }}
+            >
+              Se déconnecter
+            </Button>
+          ) : (
+            <Button as={Link} href="/api/auth/signin" variant="bordered">
+              Se connecter
+            </Button>
+          )}
+        </NavbarItem>
 
-          <NavbarItem className="lg:flex ">
-            {/* {session && session.user ? (
-              <>
-                <div className="flex justify-between items-center space-x-2 gap-4">
-                  {session.user.privilege_user ===
-                    PrivilegesEnum.ADMIN_EGLISE && (
-                    <Link href={"/church"}>
-                      <PlusCircleIcon className="w-6 cursor-pointer text-foreground" />
-                    </Link>
-                  )}
-
-                  <ProfilUser session={session} />
-                </div>
-              </>
-            ) : ( */}
-            <>
-              <Button as={Link} href="/api/auth/signin" variant="bordered">
-                Se connecter
-              </Button>
-            </>
-            {/* )} */}
-          </NavbarItem>
         </NavbarContent>
 
         <NavbarContent

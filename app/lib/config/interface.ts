@@ -7,6 +7,27 @@ import {
 } from "./enum";
 
 // start ....... interface generic ...... start
+export interface PayloadAdmin {
+  sub: number;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email: string;
+  username: string | null;
+  profil: string;
+  status: string;
+  privileges: string[];
+  iat: number;
+  exp: number;
+}
+
+export interface AuthResponse {
+  user: PayloadAdmin;
+  access_token: string;
+  refresh_token: string;
+}
+
+
 export interface PayloadUserInterface {
   sub: number;
   nom: string;

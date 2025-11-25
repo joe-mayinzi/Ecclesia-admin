@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { Link } from "@nextui-org/link";
 import { FaChurch } from "react-icons/fa";
 import { RiLoginBoxLine } from "react-icons/ri";
 import { FiUserPlus } from "react-icons/fi";
@@ -24,6 +23,7 @@ import ForgotPasswordCheckNumber from "./forgotPasswordComp";
 import ForgotPasswordConfirmCode from "./forgotPasswordConfirmCode";
 
 import { authenticate } from "@/app/lib/actions/auth";
+import { toast } from "react-toastify";
 
 type StepType =
   | "login"
@@ -49,7 +49,7 @@ export default function PopUpLogin() {
   const [loading, setLoading] = useState(false);
 
   // Connexion
-  const [telephone, setTelephone] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   // Admin eglise
@@ -81,41 +81,43 @@ export default function PopUpLogin() {
       setUser(user);
     }
   };
+ // ⚡ ajoute ça si ce n’est pas déjà importé
 
-  const handleSubmitLogin = async () => {
-    if (telephone && telephone) {
-      setLoading(true);
-      const formData = new FormData();
+const handleSubmitLogin = async () => {
+  if (!email || !password) {
+    toast.error("Veuillez remplir tous les champs.");
+    return;
+  }
 
-      formData.append("telephone", telephone);
-      formData.append("password", password);
-      try {
-        const response = await authenticate(undefined, formData);
+  setLoading(true);
 
-        if (
-          response === "Invalid credentials." ||
-          response === "Something went wrong."
-        ) {
-          throw new Error(response);
-        } else {
-          if (redirect) {
-            router.push(redirect);
-          } else {
-            router.push("/");
-          }
-          // document.location = "/";
-        }
-      } catch (error) {
-        setErrorMessage("Identifiant incorrecte");
-        onOpenAlert();
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setErrorMessage("Veuillez remplir tous les champs.");
-      onOpenAlert();
+  try {
+    // On construit d'abord le formData
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+
+    const response = await authenticate(undefined, formData);
+
+    // Vérifie la réponse NextAuth
+    if (response?.error) {
+      toast.error("Adresse mail ou mot de passe incorrect.");
+      return;
     }
-  };
+
+    toast.success("Connexion réussie !");
+    router.push(redirect || "/");
+    
+  } catch (error) {
+    toast.error("Erreur lors de la connexion. Réessayez.");
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   const contentComponentLogin = () => {
     return (
@@ -130,13 +132,13 @@ export default function PopUpLogin() {
           endContent={
             <FaPhoneAlt className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
           }
-          label="Numéro de téléphone"
-          name="telephone"
+         label="Adresse e-mail"
+          name="email"
           placeholder="Entrer votre numéro de téléphone"
-          type="text"
-          value={telephone}
+          type="email"
+          value={email}
           variant="bordered"
-          onChange={(e) => setTelephone(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <Input
           className="mt-4 mb-4"
@@ -161,26 +163,9 @@ export default function PopUpLogin() {
           variant="bordered"
           onChange={(e) => setPassword(e.target.value)}
         />
-        <div className="flex  justify-end">
-          <Link
-            className="mt-4 mb-4 text-danger-100"
-            href="#"
-            size="sm"
-            onPress={() => setStep("foreignPasswordStepOne")}
-          >
-            Mot de passe oublier?
-          </Link>
-        </div>
 
-        <div className="flex flex-col w-full gap-4">
+        <div className="flex flex-col w-full gap-4 mt-4">
           <Submit loading={loading} />
-          <Button
-            onPress={() => setStep("typeAcount")}
-            // color="primary"
-            // variant='light'
-          >
-            S&apos;enregistrer
-          </Button>
         </div>
       </form>
     );

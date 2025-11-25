@@ -5,3 +5,9 @@
 .shadaw-custom {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
+
+.error-message {
+  color: red ;
+  font-size: 0.875rem; /* 14px */
+  margin-top: 0.25rem;
+}

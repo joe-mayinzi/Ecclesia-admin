@@ -5,7 +5,11 @@ export const file_url = `https://d31uetu06bkcms.cloudfront.net/`;
 // export const api_url = `http://192.168.0.157:4000/api/`; // HOMEBOX ORANGE
 // export const api_url = `http://172.20.10.2:4000/api/`; // IP IPHONE
 
-export const api_url = `https://ecclesiabook.org/EhE7Aiheobj6gcBCZUsTkA5KliDrWvM_API/`; // localhost
+//export const api_url = `https://ecclesiabook.org/EhE7Aiheobj6gcBCZUsTkA5Kl_API_Admin`; 
+// localhost
+
+export const api_url = `http://localhost:3000/EhE7Aiheobj6gcBCZUsTkA5Kl_API_Admin/`;
+
 
 // export const api_url = `https://ecclesiabook.org/api/`;
 // export const api_url = `https://ecclesiabook.org/api_test/`;
@@ -21,15 +25,17 @@ export async function HttpRequest(
   body?: any
 ) {
   const session = await auth();
+  const token = (session as any)?.user?.access_token;
+  
 
   const headers: any =
     body instanceof FormData
       ? {
-          Authorization: `Bearer ${session?.token.access_token}`,
+          Authorization: `Bearer ${token}`,
         }
       : {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.token.access_token}`,
+          Authorization: `Bearer ${token}`,
         };
 
   try {

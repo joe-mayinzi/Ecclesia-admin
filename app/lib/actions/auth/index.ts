@@ -1,77 +1,58 @@
 "use server";
 
-import { AuthError } from "next-auth";
-
 import { CreateAbonnementDto, Token } from "../../config/interface";
 import { HttpRequest, api_url } from "../../request/request";
-
 import { signIn } from "@/auth";
 
-export async function authenticate(
-  prevState: string | undefined,
-  formData: FormData,
-) {
+// Authentification via NextAuth
+export async function authenticate(prevState: string | undefined, formData: FormData) {
   try {
-    await signIn("credentials", formData);
+    const res = await signIn("credentials", {
+      redirect: false, // ⚡ indispensable pour gérer la réponse
+      email: formData.get("email"),
+      password: formData.get("password"),
+    });
+
+    return res;
   } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return "Invalid credentials.";
-        default:
-          return "Something went wrong.";
-      }
-    }
+    console.error(error);
+    return { error: "Quelque chose s'est mal passé." };
   }
 }
 
+// Nouvelle fonction login
 export async function authSigninUser({
-  telephone,
+  email,
   password,
 }: {
-  telephone: string;
+  email: string;
   password: string;
 }) {
   try {
-    const res = await fetch(`${api_url}auth/signin/user`, {
+    const res = await fetch(`${api_url}auth/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ telephone, password }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
       cache: "no-store",
     });
 
-    if (res.status !== 201) {
+    if (!res.ok) {
+      const errMsg = await res.text();
+      console.error("❌ Erreur API login:", res.status, res.statusText, errMsg);
       return null;
     }
 
     const data = await res.json();
-
+    console.log("✅ Response API login:", data);
     return data;
   } catch (error) {
+    console.error("❌ Exception authSigninUser:", error);
     throw error;
   }
 }
 
-export async function authWithUsername({ username }: { username: string }) {
-  try {
-    const res = await fetch(`${api_url}auth/user/username/${username}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
 
-    const data = await res.json();
-
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
-
+// Rafraîchir le token
 export async function refreshAccessToken(token: Token) {
   try {
     const response = await fetch(`${api_url}auth/refresh/`, {
@@ -84,42 +65,21 @@ export async function refreshAccessToken(token: Token) {
 
     const refreshedTokens = await response.json();
 
-    if (!response.ok) {
-      throw refreshedTokens;
-    }
+    if (!response.ok) throw refreshedTokens;
 
     return {
       ...token,
       access_token: refreshedTokens.access_token,
-      refresh_token: refreshedTokens.refresh_token, // Fall back to old refresh token
+      refresh_token: refreshedTokens.refresh_token,
     };
   } catch (error) {
-    return {
-      ...token,
-      error: "RefreshAccessTokenError",
-    };
+    return { ...token, error: "RefreshAccessTokenError" };
   }
 }
 
+// Autres appels Auth
 export const Abonnement_access = async (dto: CreateAbonnementDto) =>
   await HttpRequest("abonnement", "POST", dto);
 
 export const findUserByIdApi = async (id: number) =>
   await HttpRequest(`auth/getUserById/${id}`, "GET");
-
-export const checkValidateCodeApi = async (code: string, tel: string) =>
-  await HttpRequest(`auth/checkValideCode`, "POST", { code, tel });
-export const AuthsendSmsByTelApi = async (dto: {
-  tel: string;
-  email: string;
-}) =>
-  await HttpRequest(
-    `auth/sendSmsByTel?telephone=${dto.tel}&email=${dto.email}`,
-    "GET",
-  );
-export const AuthDeleteApi = async () =>
-  await HttpRequest("auth/delete/user/", "DELETE");
-export const AuthDeleteDataOfUserApi = async () =>
-  await HttpRequest("auth/delete/user/", "DELETE");
-export const IdentificationSendFileApi = async (dto: any) =>
-  await HttpRequest("identification", "POST", dto);

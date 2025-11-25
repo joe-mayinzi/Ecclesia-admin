@@ -1,96 +1,124 @@
-import NextAuth from "next-auth";
+// ./app/api/auth/[...nextauth]/route.ts
+import NextAuth, { User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import moment from "moment";
 import { jwtDecode } from "jwt-decode";
 
-import { authSigninUser, refreshAccessToken } from "./app/lib/actions/auth";
-import { PayloadUserInterface } from "./app/lib/config/interface";
+import { authSigninUser, refreshAccessToken } from "@/app/lib/actions/auth";
+import { AuthResponse, PayloadAdmin } from "@/app/lib/config/interface";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
-      async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ telephone: z.string(), password: z.string().min(6) })
-          .safeParse(credentials);
+  name: "Credentials",
+  credentials: {
+    email: { label: "Email", type: "text" },
+    password: { label: "Password", type: "password" },
+  },
+  async authorize(credentials) {
+    console.log("⚡ [authorize] credentials reçues:", credentials);
 
-        if (parsedCredentials.success) {
-          const { telephone, password } = parsedCredentials.data;
-          const user = await authSigninUser({ telephone, password });
+    // Validation Zod : email obligatoire
+    const parsed = z
+      .object({
+        email: z.string().email(),
+        password: z.string().min(6),
+      })
+      .safeParse(credentials);
 
-          if (user) return user;
+    if (!parsed.success) {
+      console.error("❌ [authorize] Validation failed:", parsed.error.format());
+      return null;
+    }
 
-          return null;
-        }
+    const user: AuthResponse | null = await authSigninUser({
+      email: parsed.data.email,
+      password: parsed.data.password,
+    });
 
-        return null;
-      },
-    }),
+    if (!user) {
+      console.error("❌ [authorize] Login failed");
+      return null;
+    }
+
+    return user as unknown as User;
+  },
+}),
+
   ],
+
   callbacks: {
-    authorized() {
-      // const isLoggedIn = !!auth?.user;
-      // const isOnDashboard = nextUrl.pathname.startsWith('/');
-      // if (isOnDashboard) {
-      //   if (isLoggedIn) return true;
-      //   return false;
-      // } else if (isLoggedIn) {
-      //   return Response.redirect(new URL('/', nextUrl));
-      // }
-      return true;
-    },
     async jwt({ token, user, trigger, session }) {
-      const newUser: any = user;
-      const time = moment().unix();
+      const now = moment().unix();
 
-      if (trigger === "update") {
-        return Promise.resolve({ ...token, ...session.user });
-      }
+      // Mise à jour forcée
+      if (trigger === "update") return { ...token, ...session.user };
+
+      // Nouvel utilisateur connecté → on stocke ses tokens
       if (user) {
-        token.access_token = `${newUser?.access_token}`;
-        token.refresh_token = `${newUser?.refresh_token}`;
-      } else {
-        if (token) {
-          let jwt_decode: PayloadUserInterface = jwtDecode(
-            `${token?.access_token}`,
-          );
+        token.access_token = (user as any).access_token;
+        token.refresh_token = (user as any).refresh_token;
+        return token;
+      }
 
-          if (jwt_decode.exp < time) {
+      // Rafraîchir si token expiré
+      if (token && token.access_token) {
+        const decoded: PayloadAdmin = jwtDecode(token.access_token as string);
+
+        if (decoded.exp < now) {
+          try {
             const rt = await refreshAccessToken({
-              access_token: `${token.access_token}`,
-              refresh_token: `${token.refresh_token}`,
+              access_token: token.access_token as string,
+              refresh_token: token.refresh_token as string,
             });
 
-            if (rt) {
-              token.token = {
-                access_token: rt.access_token,
-                refresh_token: rt.refresh_token,
-              };
-              jwt_decode = jwtDecode(`${token?.access_token}`);
-
-              return token;
-            }
+            token.access_token = rt.access_token;
+            token.refresh_token = rt.refresh_token;
+          } catch (err) {
+            console.error("❌ [jwt] Refresh token failed:", err);
+            return { ...token, error: "RefreshTokenError" };
           }
         }
       }
 
-      return Promise.resolve(token);
+      return token;
     },
 
-    async session({ token, session }) {
-      const newSession = session;
-      const newToken = token;
+    async session({ session, token }) {
+  // On décode le token pour extraire les infos du payload
+  if (token?.access_token) {
+    try {
+      const decoded: PayloadAdmin = jwtDecode(token.access_token as string);
 
-      newSession.user = jwtDecode(`${newToken.access_token}`);
-      newSession.token = {
-        access_token: `${token.access_token}`,
-        refresh_token: `${token.refresh_token}`,
-      };
+      session.user = {
+        ...session.user,
+        id: decoded.sub,
+        nom: decoded.nom,
+        prenom: decoded.prenom,
+        telephone: decoded.telephone,
+        email: decoded.email,
+        username: decoded.username,
+        profil: decoded.profil,
+        status: decoded.status,
+        privileges: decoded.privileges,
+        access_token: token.access_token,
+        refresh_token: token.refresh_token,
+      } as any;
+    } catch (err) {
+      console.error("❌ Erreur décodage JWT:", err);
+      session.user = {
+        ...session.user,
+        access_token: token.access_token,
+        refresh_token: token.refresh_token,
+      } as any;
+    }
+  }
 
-      return Promise.resolve(newSession);
-    },
+  return session;
+}
   },
-  secret: "Nghcaj6wqO5qjAQNs+MalM4aW2mlMoaA3lLKe78MRag=",
-  trustHost: true,
+
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: true,
 });

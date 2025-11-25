@@ -13,3 +13,10 @@ export type AlertPros = {
   alertBody: React.ReactNode;
   alertTitle: string;
 };
+
+export interface CardSuggestionsUIProps {
+  user: string;
+  content: string;
+  date: string;
+  status: "lu" | "non lu";
+}

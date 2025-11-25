@@ -8,6 +8,9 @@ import { Providers } from "./providers";
 import { auth } from "@/auth";
 import { fontSans } from "@/config/fonts";
 import { siteConfig } from "@/config/site";
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 
 export const metadata: Metadata = {
   title: {
@@ -51,6 +54,7 @@ export default async function RootLayout({
             <div className="relative flex flex-col h-full bg-transparent">
               {children}
             </div>
+            <ToastContainer position="top-right" autoClose={3000} />
           </Providers>
         </SessionProvider>
       </body>

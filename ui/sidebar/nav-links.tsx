@@ -25,15 +25,26 @@ import { Avatar } from "@nextui-org/avatar";
 import { useState } from "react";
 import Link from "next/link";
 import { VscLibrary } from "react-icons/vsc";
-import { FaChurch } from "react-icons/fa";
+import { FaChurch, FaRegImage } from "react-icons/fa";
 import { PiVideoLight } from "react-icons/pi";
 import { GrUserAdmin } from "react-icons/gr";
+import { CiWarning } from "react-icons/ci";
+
+
 
 import { title } from "../primitives";
 
 import { PrivilegesEnum } from "@/app/lib/config/enum";
 import { Accordion, AccordionItem } from "@nextui-org/react";
 import { IoMdAdd } from "react-icons/io";
+import { FiMessageSquare, FiUsers } from "react-icons/fi";
+
+import { MdForum, MdOutlineAudiotrack, MdOutlineOndemandVideo, MdOutlinePanoramaHorizontalSelect } from "react-icons/md";
+import { FaEye } from "react-icons/fa";
+import { AiTwotoneAudio } from "react-icons/ai";
+import { BsCameraReels } from "react-icons/bs";
+
+
 
 const links = [
   { name: "Dashboard", href: "/", icon: HomeIcon, menu: false },
@@ -58,95 +69,69 @@ const links = [
     ],
   },
   {
-    name: "Églises",
-    href: "/list-church",
-    icon: () => <FaChurch size={24} />,
+    name: "Utilisateurs",
+    href: "/users",
+    icon: () => <FiUsers size={24} />,
   },
   {
-    name: "Comment utiliser",
-    href: "/first-step",
-    icon: () => <PiVideoLight size={24} />,
+    name: "Suggestions",
+    href: "/suggestions",
+    icon: () => <FiMessageSquare size={24} />,
   },
   {
-    id: "biblio",
-    name: "Bibliothèque",
-    icon: () => <VscLibrary size={24} />,
+    name: "Gestion des vues",
+    href: "/views-stats",
+    icon: () => <FaEye size={24} />,
+  },
+  {
+    name: "Gestion des streams",
+    href: "streams-stats",
+    icon: () => <MdOutlineAudiotrack  size={24} />,
+  },
+  // {
+  //   name: "Signalements",
+  //   href: "/signales",
+  //   icon: () => <CiWarning  size={24} />,
+  // },
+   {
+    id: "signal",
+    name: "Signalements",
+    icon: () => <CiWarning  size={24} />,
     menu: true,
     option: [
-      { name: "Vidéos", href: "/videos", icon: PlayIcon, menu: false },
-      { name: "Audios", href: "/audios", icon: MusicalNoteIcon, menu: false },
-      { name: "Images", href: "/pictures", icon: PhotoIcon, menu: false },
       {
-        name: "Livres",
-        href: "/book",
-        icon: Bars4Icon,
+        name: "Video",
+        href: "/signal-video",
+        icon: ()=> <MdOutlineOndemandVideo size={24} />,
+        menu: false,
+      },
+      {
+        name: "Audio",
+        href: "/signal-audio",
+        icon: ()=> <AiTwotoneAudio size={24} />,
+        menu: false,
+      },
+      {
+        name: "Image",
+        href: "/signal-image",
+        icon: ()=> <FaRegImage size={24} />,
+        menu: false,
+      },
+      {
+        name: "Témoignage",
+        href: "/signal-testimonials",
+        icon: ()=> <BsCameraReels size={24} />,
+        menu: false,
+      },
+      {
+        name: "Forum",
+        href: "/signal-forum",
+        icon: ()=> <MdForum size={24} />,
         menu: false,
       },
     ],
   },
-
-  {
-    id: "bible_lect",
-    name: "Bible et Plan de lecture",
-    icon: BookOpenIcon,
-    // () => <VscLibrary size={24} />,
-    menu: true,
-    option: [
-      {
-        name: "Bible",
-        href: "/bible",
-        icon: BookOpenIcon,
-        menu: false,
-      },
-      {
-        name: "Plan de lecture",
-        href: "/plan-lecture",
-        icon: MapIcon,
-        menu: false,
-      },
-      {
-        name: "Quiz biblique",
-        href: "/bible-quiz",
-        icon: QuestionMarkCircleIcon,
-        menu: false,
-      },
-    ],
-  },
-  {
-    name: "Etude biblique",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/bible-study",
-    icon: AcademicCapIcon,
-    menu: false,
-  },
-  {
-    name: "Forum",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/forum",
-    icon: PencilSquareIcon,
-    menu: false,
-  },
-  {
-    name: "Sondage & Question",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/sondage",
-    icon: ChartBarSquareIcon,
-    menu: false,
-  },
-  {
-    name: "Mur de prière",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/prayer-wall",
-    icon: RectangleGroupIcon,
-    menu: false,
-  },
-  {
-    name: "Événements",
-    privilege: PrivilegesEnum.FIDELE,
-    href: "/event",
-    icon: CalendarDaysIcon,
-    menu: false,
-  },
+  { name: "Panoramas", href: "/panorama", icon: MdOutlinePanoramaHorizontalSelect, menu: false },
 ];
 
 const option = [
