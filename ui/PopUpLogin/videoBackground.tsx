@@ -31,15 +31,15 @@ export default function VideoBackground() {
       </video>
 
       {/* LOGO */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-1 left-0 right-4 z-10">
         <Link href="/">
           <Image alt="ecclesia" height={100} src="/ecclessia.png" width={100} />
         </Link>
       </div>
 
-      {/* BOUTON SON */}
+      {/* BOUTON SON - Positionné en bas à droite de la section vidéo */}
       <button
-        className="absolute bottom-4 right-4 z-10 bg-black/60 text-white px-4 py-2 rounded-2xl shadow-md hover:bg-black/80 transition"
+        className="absolute bottom-0 right-4 z-30 bg-black/60 text-white px-4 py-2 rounded-2xl shadow-lg hover:bg-black/80 transition-all duration-200 font-medium"
         onClick={toggleMute}
         type="button"
         aria-label={muted ? "Activer le son" : "Couper le son"}

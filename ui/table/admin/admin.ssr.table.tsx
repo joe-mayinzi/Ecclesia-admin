@@ -36,6 +36,7 @@ type Admin = {
   telephone: string;
   status: string;
   nom?: string;
+  prenom?: string;
   deletedAt?: string | null;
 };
 
@@ -237,6 +238,14 @@ export default function AdminSsrTableUI({ data }: Props) {
                 </div>
 
                 <div className="space-y-3">
+                  {(admin.prenom || admin.nom) && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Nom</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {[admin.prenom, admin.nom].filter(Boolean).join(" ")}
+                      </p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Email</p>
                     <p className="text-sm font-medium text-gray-800 break-all">{admin.email}</p>
@@ -365,6 +374,11 @@ export default function AdminSsrTableUI({ data }: Props) {
               >
                 <TableCell className="py-4 px-6">
                   <span className="text-gray-500 font-medium text-sm">#{index + 1}</span>
+                </TableCell>
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-800 font-medium text-sm">
+                    {[admin.prenom, admin.nom].filter(Boolean).join(" ") || "-"}
+                  </span>
                 </TableCell>
                 <TableCell className="py-4 px-6">
                   <span className="text-gray-800 break-all font-medium text-sm">{admin.email}</span>

@@ -35,10 +35,16 @@ export default function SignOut() {
               Voulez-vous vraiment vous déconnecter ?
             </p>
 
-            <form action={signOutAction}>
-              <Button className="font-bold text-white" color="primary" type="submit">
-                Oui, je veux me déconnecter !
-              </Button>
+            <form action={signOutAction} className="w-full">
+              <div className="flex flex-col w-full gap-4 mt-4">
+                <Button 
+                  className="mx-1 font-bold text-white" 
+                  color="primary" 
+                  type="submit"
+                >
+                  Oui, je veux me déconnecter !
+                </Button>
+              </div>
             </form>
           </CardBody>
         </Card>

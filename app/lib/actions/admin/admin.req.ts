@@ -28,17 +28,28 @@ export const deleteAdminApi = async (id: number) => {
  * @param data - Données à mettre à jour
  */
 export const updateAdminApi = async (id: number, data: any) => {
-  const res = await HttpRequest(
-    `${api_url}/${id}`, // ID dynamique
-    "PUT",
-    data
-  );
+  try {
+    const res = await HttpRequest(
+      `admin/update/${id}`,
+      "PATCH",
+      data
+    );
 
-  if (!res || res.statusCode >= 400) {
-    throw new Error(res?.message || "Erreur lors de la mise à jour de l'admin");
+    if (!res || (res.statusCode && res.statusCode >= 400)) {
+      const errorMessage =
+        typeof res?.message === "object"
+          ? res.message.join(", ")
+          : res?.message || "Erreur lors de la mise à jour de l'admin";
+      throw new Error(errorMessage);
+    }
+
+    return res;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Erreur lors de la mise à jour de l'admin");
   }
-
-  return res;
 };
 
 /**

@@ -154,7 +154,13 @@ export default function UpdateAdminDataForm({
         throw new Error("ID administrateur invalide");
       }
 
-      const updatedAdmin = await updateAdminApi(adminId, formData);
+      // Filtrer les données pour ne garder que les propriétés autorisées
+      const allowedData = {
+        email: formData.email,
+        telephone: formData.telephone,
+      };
+
+      const updatedAdmin = await updateAdminApi(adminId, allowedData);
       toast.success("Administrateur mis à jour avec succès !");
       onUpdateSuccess(updatedAdmin);
       onClose();
