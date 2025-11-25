@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { log } from "console";
 
 export const file_url = `https://d31uetu06bkcms.cloudfront.net/`;
 
@@ -26,7 +27,7 @@ export async function HttpRequest(
 ) {
   const session = await auth();
   const token = (session as any)?.user?.access_token;
-  
+  console.log("token : ", token);
 
   const headers: any =
     body instanceof FormData

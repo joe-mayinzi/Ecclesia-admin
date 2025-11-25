@@ -13,6 +13,7 @@ import {
   Input,
   Card,
   CardBody,
+  Avatar,
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
 import { toggleUserStatusApi } from "@/app/lib/actions/admin/admin.req";
@@ -112,23 +113,54 @@ export default function UsersSsrTableUI({ data }: Props) {
     setSelectedUser(null);
   }, []);
 
-  // Styles pour la table
+  // Fonction pour extraire les initiales (2 premières lettres)
+  const getInitials = useCallback((name: string | null): string => {
+    if (!name) return "U";
+    const parts = name.trim().split(/\s+/);
+    const firstLetter = parts[0]?.charAt(0)?.toUpperCase() || "";
+    const secondLetter = parts[1]?.charAt(0)?.toUpperCase() || parts[0]?.charAt(1)?.toUpperCase() || "";
+    return (firstLetter + secondLetter).slice(0, 2) || "U";
+  }, []);
+
+  // Styles pour la table - Inspiré du design TailAdmin
   const tableClassNames = useMemo(
     () => ({
-      wrapper: "min-h-[222px] shadow-sm",
+      wrapper: "min-h-[222px] shadow-sm rounded-lg border border-gray-200 bg-white dark:bg-gray-800 overflow-hidden",
       th: [
-        "bg-default-100",
-        "text-default-700",
+        "bg-gray-50",
+        "text-gray-700",
         "font-semibold",
+        "text-xs",
+        "uppercase",
+        "tracking-wider",
         "border-b",
-        "border-divider",
+        "border-gray-200",
         "py-4",
-        "text-sm",
+        "px-6",
+        "first:rounded-tl-lg",
+        "last:rounded-tr-lg",
       ],
       td: [
         "py-4",
+        "px-6",
+        "text-sm",
+        "text-gray-800",
+        "border-b",
+        "border-gray-100",
+        "group-data-[hover=true]:bg-gray-50/50",
+        "transition-colors",
+        "duration-200",
         "group-data-[first=true]:first:before:rounded-none",
         "group-data-[first=true]:last:before:rounded-none",
+      ],
+      tr: [
+        "hover:bg-gray-50/30",
+        "transition-all",
+        "duration-200",
+        "group",
+        "border-b",
+        "border-gray-100",
+        "last:border-b-0",
       ],
     }),
     []
@@ -146,28 +178,28 @@ export default function UsersSsrTableUI({ data }: Props) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               size="md"
-              startContent={<FaSearch className="text-default-400" />}
+              startContent={<FaSearch className="text-gray-400" />}
               variant="bordered"
               classNames={{
                 input: "text-sm",
-                inputWrapper: "border-default-200",
+                inputWrapper: "border-gray-200 hover:border-gray-300",
               }}
             />
           </div>
-          <div className="text-sm text-default-500 font-medium">
+          <div className="text-sm text-gray-600 font-medium">
             {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? "s" : ""}
           </div>
         </div>
 
         {/* Liste des utilisateurs en cartes */}
         {filteredUsers.length === 0 ? (
-          <Card className="w-full">
+          <Card className="w-full border border-gray-200 shadow-sm rounded-lg bg-white dark:bg-gray-800">
             <CardBody className="text-center py-12">
-              <p className="text-default-500 text-lg">
+              <p className="text-gray-500 text-sm font-medium">
                 {search ? "Aucun utilisateur trouvé" : "Aucun utilisateur"}
               </p>
               {search && (
-                <p className="text-default-400 text-sm mt-2">
+                <p className="text-gray-400 text-xs mt-2">
                   Essayez avec d'autres mots-clés
                 </p>
               )}
@@ -177,53 +209,66 @@ export default function UsersSsrTableUI({ data }: Props) {
           filteredUsers.map((user, index) => (
             <Card
               key={user.id}
-              className="w-full shadow-md hover:shadow-lg transition-shadow"
+              className="w-full shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 rounded-lg bg-white dark:bg-gray-800"
             >
-              <CardBody className="p-4 space-y-3">
-                <div className="flex items-center justify-between">
+              <CardBody className="p-5 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-200">
                   <div className="flex items-center gap-2">
-                    <span className="text-default-500 font-medium text-sm">
+                    <span className="text-gray-400 font-semibold text-xs">
                       #{index + 1}
                     </span>
                     <Chip
                       color={user.status === "Actif" ? "success" : "warning"}
                       size="sm"
                       variant="flat"
+                      className="font-medium rounded-full px-3 py-1"
+                      classNames={{
+                        base: user.status === "Actif" 
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
+                          : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+                      }}
                     >
                       {user.status}
                     </Chip>
                   </div>
-                  <span className="text-xs text-default-400">{user.createdAt}</span>
+                  <span className="text-xs text-gray-500 font-medium">{user.createdAt}</span>
                 </div>
 
-                <div>
-                  <p className="text-sm text-default-500 mb-1">Nom & Prénom</p>
-                  <p className="text-base font-semibold text-default-700">
-                    {user.name || "Non renseigné"}
-                  </p>
+                <div className="flex items-start gap-3">
+                  <Avatar
+                    name={getInitials(user.name)}
+                    size="sm"
+                    className="flex-shrink-0 bg-primary text-white font-semibold"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Nom & Prénom</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {user.name || "Non renseigné"}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {user.email && (
                     <div>
-                      <p className="text-xs text-default-500 mb-1">Email</p>
-                      <p className="text-sm font-medium break-all">{user.email}</p>
+                      <p className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Email</p>
+                      <p className="text-sm font-medium text-gray-700 break-all">{user.email}</p>
                     </div>
                   )}
                   {user.telephone && (
                     <div>
-                      <p className="text-xs text-default-500 mb-1">Téléphone</p>
-                      <p className="text-sm font-medium">{user.telephone}</p>
+                      <p className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Téléphone</p>
+                      <p className="text-sm font-medium text-gray-700">{user.telephone}</p>
                     </div>
                   )}
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2 border-t border-divider">
+                <div className="flex flex-col gap-2 pt-3 border-t border-gray-200">
                   <Button
                     size="sm"
                     color={user.status === "Actif" ? "warning" : "success"}
-                    variant="flat"
-                    className="w-full"
+                    variant="solid"
+                    className="w-full font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                     onPress={() => toggleStatus(user)}
                     isLoading={isToggling === user.id}
                     startContent={
@@ -239,8 +284,8 @@ export default function UsersSsrTableUI({ data }: Props) {
                   <Button
                     size="sm"
                     color="primary"
-                    variant="flat"
-                    className="w-full"
+                    variant="solid"
+                    className="w-full font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                     onPress={() => openMailModal(user)}
                     startContent={<FaEnvelope className="text-xs" />}
                   >
@@ -275,22 +320,22 @@ export default function UsersSsrTableUI({ data }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             size="md"
-            startContent={<FaSearch className="text-default-400" />}
+            startContent={<FaSearch className="text-gray-400" />}
             variant="bordered"
             classNames={{
               input: "text-sm",
-              inputWrapper: "border-default-200",
+              inputWrapper: "border-gray-200 hover:border-gray-300",
             }}
           />
         </div>
-        <div className="text-sm text-default-500 font-medium whitespace-nowrap">
+        <div className="text-sm text-gray-600 font-medium whitespace-nowrap">
           {filteredUsers.length} utilisateur{filteredUsers.length > 1 ? "s" : ""}{" "}
           {search && `trouvé${filteredUsers.length > 1 ? "s" : ""}`}
         </div>
       </div>
 
       {/* Tableau */}
-      <div className="rounded-lg border border-divider overflow-hidden">
+      <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm bg-white dark:bg-gray-800">
         <Table
           aria-label="Liste des Utilisateurs"
           isStriped
@@ -298,55 +343,80 @@ export default function UsersSsrTableUI({ data }: Props) {
           classNames={tableClassNames}
         >
           <TableHeader>
-            <TableColumn className="w-16">N°</TableColumn>
-            <TableColumn>NOM & PRÉNOM</TableColumn>
-            <TableColumn>EMAIL</TableColumn>
-            <TableColumn>TÉLÉPHONE</TableColumn>
-            <TableColumn className="w-32">STATUT</TableColumn>
-            <TableColumn className="w-36">DATE CRÉATION</TableColumn>
-            <TableColumn className="w-64">ACTIONS</TableColumn>
+            <TableColumn className="w-16 text-xs font-semibold uppercase tracking-wider text-gray-700">N°</TableColumn>
+            <TableColumn className="text-xs font-semibold uppercase tracking-wider text-gray-700">NOM & PRÉNOM</TableColumn>
+            <TableColumn className="text-xs font-semibold uppercase tracking-wider text-gray-700">EMAIL</TableColumn>
+            <TableColumn className="text-xs font-semibold uppercase tracking-wider text-gray-700">TÉLÉPHONE</TableColumn>
+            <TableColumn className="w-32 text-xs font-semibold uppercase tracking-wider text-gray-700">STATUT</TableColumn>
+            <TableColumn className="w-36 text-xs font-semibold uppercase tracking-wider text-gray-700">DATE CRÉATION</TableColumn>
+            <TableColumn className="w-64 text-xs font-semibold uppercase tracking-wider text-gray-700">ACTIONS</TableColumn>
           </TableHeader>
-          <TableBody emptyContent="Aucun utilisateur trouvé">
+          <TableBody 
+            emptyContent={
+              <div className="flex flex-col items-center justify-center py-16">
+                <p className="text-gray-500 text-sm font-medium">
+                  {search ? "Aucun utilisateur trouvé" : "Aucun utilisateur"}
+                </p>
+              </div>
+            }
+          >
             {filteredUsers.map((user, index) => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <span className="text-default-600 font-medium">{index + 1}</span>
+              <TableRow 
+                key={user.id}
+                className="group hover:bg-gray-50/50 transition-colors duration-200 border-b border-gray-100 last:border-b-0"
+              >
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-500 font-medium text-sm">#{index + 1}</span>
                 </TableCell>
-                <TableCell>
-                  <span className="text-default-700 font-medium">
-                    {user.name || "Non renseigné"}
-                  </span>
+                <TableCell className="py-4 px-6">
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      name={getInitials(user.name)}
+                      size="sm"
+                      className="flex-shrink-0 bg-primary text-white font-semibold"
+                    />
+                    <span className="text-gray-800 font-medium text-sm">
+                      {user.name || "Non renseigné"}
+                    </span>
+                  </div>
                 </TableCell>
-                <TableCell>
-                  <span className="text-default-700 break-all text-sm">
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-700 break-all text-sm">
                     {user.email || "Non renseigné"}
                   </span>
                 </TableCell>
-                <TableCell>
-                  <span className="text-default-700 text-sm">
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-600 text-sm">
                     {user.telephone || "Non renseigné"}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-6">
                   <Chip
                     color={user.status === "Actif" ? "success" : "warning"}
                     size="sm"
                     variant="flat"
+                    className="font-medium rounded-full px-3 py-1"
+                    classNames={{
+                      base: user.status === "Actif" 
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
+                        : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+                    }}
                   >
                     {user.status}
                   </Chip>
                 </TableCell>
-                <TableCell>
-                  <span className="text-default-500 text-sm">{user.createdAt}</span>
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-500 text-sm">{user.createdAt}</span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-6">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       size="sm"
                       color={user.status === "Actif" ? "warning" : "success"}
-                      variant="flat"
+                      variant="solid"
                       onPress={() => toggleStatus(user)}
                       isLoading={isToggling === user.id}
+                      className="font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                       startContent={
                         user.status === "Actif" ? (
                           <FaUserLock className="text-xs" />
@@ -360,8 +430,9 @@ export default function UsersSsrTableUI({ data }: Props) {
                     <Button
                       size="sm"
                       color="primary"
-                      variant="flat"
+                      variant="solid"
                       onPress={() => openMailModal(user)}
+                      className="font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                       startContent={<FaEnvelope className="text-xs" />}
                     >
                       Mail

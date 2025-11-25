@@ -14,11 +14,20 @@ import {
   Select,
   SelectItem,
   Spinner,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Card,
+  CardBody,
+  Chip,
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
 import {
   uploadPanoramaApi,
-  getAllPanoramasWithoutPaginationApi,
+  getAllPanoramasApi,
   deletePanoramaApi,
 } from "@/app/lib/actions/panorama/panorama.req";
 import { VideoIcon } from "@/ui/icons";
@@ -27,7 +36,7 @@ import { GalleryIcon } from "@/ui/icons";
 interface UploadPanoramaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUploadSuccess?: () => void;
+  onUploadSuccess?: (uploadedVideoUrl?: string) => void;
 }
 
 export default function UploadPanoramaModal({
@@ -226,16 +235,36 @@ export default function UploadPanoramaModal({
 
       // Succès
       toast.success("Panorama uploadé avec succès !");
-      cleanupPreview();
-      resetForm();
+      
+      // Conserver l'URL de prévisualisation pour l'afficher sur la page
+      const uploadedVideoUrl = previewUrl;
       
       // Rafraîchir la liste des panoramas
       await loadPanoramas();
 
-      // Callback de succès
+      // Callback de succès avec l'URL de la vidéo uploadée
+      // Ne pas nettoyer l'URL ici, elle sera nettoyée sur la page après affichage
       if (onUploadSuccess) {
-        onUploadSuccess();
+        onUploadSuccess(uploadedVideoUrl || undefined);
       }
+      
+      // Réinitialiser le formulaire mais garder l'URL pour le callback
+      // L'URL sera nettoyée par la page après affichage
+      setSelectedFile(null);
+      setSelectedImage(null);
+      setImagePreviewUrl(null);
+      setType("");
+      setTitle("");
+      setDescription("");
+      setUploadProgress(0);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      if (imageInputRef.current) {
+        imageInputRef.current.value = "";
+      }
+      
+      // Ne pas nettoyer previewUrl ici, elle sera nettoyée sur la page
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error
@@ -249,12 +278,12 @@ export default function UploadPanoramaModal({
     }
   }, [selectedFile, selectedImage, type, title, description, cleanupPreview, resetForm, onClose, onUploadSuccess]);
 
-  // Charger les panoramas au montage et quand le modal s'ouvre
+  // Charger les panoramas avec la route spécifique type=10, page=2, limit=10
   const loadPanoramas = useCallback(async () => {
     setIsLoadingPanoramas(true);
     try {
-      // La fonction getAllPanoramasWithoutPaginationApi retourne maintenant toujours un tableau normalisé
-      const data = await getAllPanoramasWithoutPaginationApi();
+      // Utiliser la route panorama/all?type=10&page=2&limit=10
+      const data = await getAllPanoramasApi(10, 2, 10);
       setPanoramas(data);
     } catch (error: unknown) {
       const errorMessage =
@@ -392,24 +421,6 @@ export default function UploadPanoramaModal({
                 </div>
               </div>
 
-              {/* Aperçu vidéo */}
-              {previewUrl && selectedFile && (
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-default-700">
-                    Aperçu Panorama
-                  </label>
-                  <div className="relative w-full rounded-lg overflow-hidden bg-black">
-                    <video
-                      src={previewUrl}
-                      controls
-                      className="w-full max-h-64 object-contain"
-                      preload="metadata"
-                    >
-                      Votre navigateur ne supporte pas la lecture de vidéos.
-                    </video>
-                  </div>
-                </div>
-              )}
 
               {/* Zone de sélection d'image optionnelle */}
               <div className="flex flex-col gap-2">
@@ -549,11 +560,11 @@ export default function UploadPanoramaModal({
             )}
           </div>
 
-          {/* Liste des panoramas */}
+          {/* Table des panoramas */}
           <Divider className="my-6" />
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-default-900">
+              <h3 className="text-lg font-semibold text-gray-800">
                 Panoramas existants
               </h3>
               <Button
@@ -561,6 +572,7 @@ export default function UploadPanoramaModal({
                 variant="light"
                 onPress={loadPanoramas}
                 isDisabled={isLoadingPanoramas}
+                className="text-xs"
               >
                 Actualiser
               </Button>
@@ -571,76 +583,113 @@ export default function UploadPanoramaModal({
                 <Spinner size="md" />
               </div>
             ) : panoramas.length === 0 ? (
-              <div className="text-center py-8 text-default-500">
-                <VideoIcon className="text-4xl mx-auto mb-2 text-default-300" />
-                <p className="text-sm">Aucun panorama pour le moment</p>
-              </div>
+              <Card className="border border-gray-200 shadow-sm">
+                <CardBody className="text-center py-8">
+                  <VideoIcon className="text-4xl mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm text-gray-500">Aucun panorama pour le moment</p>
+                </CardBody>
+              </Card>
             ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {panoramas.map((panorama) => {
-                  const isDeleting = deletingIds.has(panorama.id);
-                  return (
-                    <div
-                      key={panorama.id}
-                      className="flex items-center justify-between p-4 border border-default-200 rounded-lg hover:bg-default-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
-                          <div className="w-12 h-12 rounded-lg bg-default-100 flex items-center justify-center">
-                            <VideoIcon className="text-xl text-default-400" />
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-default-900 truncate">
-                            {panorama.title || panorama.name || "Sans titre"}
-                          </h4>
-                          {panorama.description && (
-                            <p className="text-sm text-default-500 truncate mt-1">
-                              {panorama.description}
-                            </p>
-                          )}
-                          {panorama.createdAt && (
-                            <p className="text-xs text-default-400 mt-1">
-                              {new Date(panorama.createdAt).toLocaleDateString(
-                                "fr-FR",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {panorama.videoUrl && (
-                          <Button
-                            size="sm"
-                            variant="light"
-                            as="a"
-                            href={panorama.videoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+              <Card className="border border-gray-200 shadow-sm">
+                <CardBody className="p-0">
+                  <Table 
+                    aria-label="Liste des Panoramas" 
+                    isStriped
+                    removeWrapper
+                    classNames={{
+                      wrapper: "min-h-[200px] shadow-sm rounded-lg border border-gray-200 bg-white dark:bg-gray-800 overflow-hidden",
+                      th: [
+                        "bg-gray-50",
+                        "text-gray-700",
+                        "font-semibold",
+                        "text-xs",
+                        "uppercase",
+                        "tracking-wider",
+                        "border-b",
+                        "border-gray-200",
+                        "py-3",
+                        "px-4",
+                      ],
+                      td: [
+                        "py-3",
+                        "px-4",
+                        "text-sm",
+                        "text-gray-800",
+                        "border-b",
+                        "border-gray-100",
+                        "group-data-[hover=true]:bg-gray-50/50",
+                        "transition-colors",
+                        "duration-200",
+                      ],
+                      tr: [
+                        "hover:bg-gray-50/30",
+                        "transition-all",
+                        "duration-200",
+                        "group",
+                        "border-b",
+                        "border-gray-100",
+                        "last:border-b-0",
+                      ],
+                    }}
+                  >
+                    <TableHeader>
+                      <TableColumn className="w-16 text-xs font-semibold uppercase tracking-wider text-gray-700">N°</TableColumn>
+                      <TableColumn className="text-xs font-semibold uppercase tracking-wider text-gray-700">Titre</TableColumn>
+                      <TableColumn className="text-xs font-semibold uppercase tracking-wider text-gray-700">Description</TableColumn>
+                      <TableColumn className="text-xs font-semibold uppercase tracking-wider text-gray-700">Date</TableColumn>
+                      <TableColumn className="w-32 text-xs font-semibold uppercase tracking-wider text-gray-700">Actions</TableColumn>
+                    </TableHeader>
+                    <TableBody>
+                      {panoramas.map((panorama, index) => {
+                        const isDeleting = deletingIds.has(panorama.id);
+                        return (
+                          <TableRow 
+                            key={panorama.id}
+                            className="group hover:bg-gray-50/50 transition-colors duration-200 border-b border-gray-100 last:border-b-0"
                           >
-                            Voir
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          color="danger"
-                          variant="flat"
-                          onPress={() => handleDelete(panorama.id)}
-                          isLoading={isDeleting}
-                          isDisabled={isDeleting}
-                        >
-                          Supprimer
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                            <TableCell className="py-3 px-4">
+                              <span className="text-gray-500 font-medium text-sm">#{index + 1}</span>
+                            </TableCell>
+                            <TableCell className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <VideoIcon className="text-lg text-gray-400" />
+                                <span className="text-gray-800 font-medium text-sm">
+                                  {panorama.title || panorama.name || "Sans titre"}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-3 px-4">
+                              <span className="text-gray-600 text-sm line-clamp-1">
+                                {panorama.description || "-"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-3 px-4">
+                              <span className="text-gray-500 text-sm">
+                                {panorama.createdAt 
+                                  ? new Date(panorama.createdAt).toLocaleDateString("fr-FR")
+                                  : "-"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-3 px-4">
+                              <Button
+                                size="sm"
+                                color="danger"
+                                variant="solid"
+                                onPress={() => handleDelete(panorama.id)}
+                                isLoading={isDeleting}
+                                isDisabled={isDeleting}
+                                className="font-medium text-xs h-7 px-3 text-white transition-all hover:opacity-90"
+                              >
+                                Supprimer
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </CardBody>
+              </Card>
             )}
           </div>
         </ModalBody>

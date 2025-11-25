@@ -12,7 +12,6 @@ export default async function SignalementsForum() {
   // Récupération des signalements pour le type "forum"
   const res = await getSignalesApi("forum", 1, 1000);
   const signalements = Array.isArray(res) ? res : [];
-  console.log("Signalements forum fetchés :", signalements);
 
   if (signalements.length === 0) {
     return (

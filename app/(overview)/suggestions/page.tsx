@@ -11,7 +11,7 @@ export default async function SuggestionsPage() {
   }
 
   try {
-    const res = await getSuggestionsApi(1, 10);
+    const res = await getSuggestionsApi(1, 1000);
     
     // Gérer différents formats de réponse
     const data = Array.isArray(res) 

@@ -13,7 +13,6 @@ export default async function SignalementsTestimonials() {
   const res = await getSignalesApi("testimonials", 1, 1000);
 
   const signalements = Array.isArray(res) ? res : [];
-  console.log("Signalements testimonials fetchés :", signalements);
 
   if (signalements.length === 0) {
     return (

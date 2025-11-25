@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useDisclosure } from "@nextui-org/react";
 import { toast } from "react-toastify";
 import UploadPanoramaModal from "@/ui/modal/form/panorama";
@@ -10,6 +10,7 @@ import {
   Card,
   CardBody,
   Spinner,
+  Button,
 } from "@nextui-org/react";
 import { VideoIcon } from "@/ui/icons";
 import PanoramaCard from "@/ui/card/panorama-card";
@@ -35,8 +36,14 @@ export default function PanoramaPageClient({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [panoramas, setPanoramas] = useState<Panorama[]>(initialData);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
 
-  const handleUploadSuccess = async () => {
+  const handleUploadSuccess = useCallback(async (videoUrl?: string) => {
+    // Stocker l'URL de la vidéo uploadée pour l'afficher
+    if (videoUrl) {
+      setUploadedVideoUrl(videoUrl);
+    }
+    
     // Rafraîchir la liste des panoramas
     setIsLoading(true);
     try {
@@ -50,7 +57,15 @@ export default function PanoramaPageClient({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Nettoyer l'URL de prévisualisation
+  const handleClosePreview = useCallback(() => {
+    if (uploadedVideoUrl) {
+      URL.revokeObjectURL(uploadedVideoUrl);
+      setUploadedVideoUrl(null);
+    }
+  }, [uploadedVideoUrl]);
 
 
   return (
@@ -62,6 +77,42 @@ export default function PanoramaPageClient({
         onClose={onClose}
         onUploadSuccess={handleUploadSuccess}
       />
+
+      {/* Aperçu vidéo après upload */}
+      {uploadedVideoUrl && (
+        <Card className="mb-6 border border-gray-200 shadow-sm">
+          <CardBody className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                  Aperçu du Panorama Uploadé
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Votre panorama a été uploadé avec succès
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="light"
+                onPress={handleClosePreview}
+                className="text-xs"
+              >
+                Fermer
+              </Button>
+            </div>
+            <div className="relative w-full rounded-lg overflow-hidden bg-black">
+              <video
+                src={uploadedVideoUrl}
+                controls
+                className="w-full max-h-96 object-contain"
+                preload="metadata"
+              >
+                Votre navigateur ne supporte pas la lecture de vidéos.
+              </video>
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center items-center py-12">

@@ -140,22 +140,45 @@ export default function AdminSsrTableUI({ data }: Props) {
     setIsUpdateOpen(true);
   };
 
-  // Styles pour la table
+  // Styles pour la table - Inspiré du design TailAdmin
   const tableClassNames = useMemo(
     () => ({
-      wrapper: "min-h-[222px] shadow-sm",
+      wrapper: "min-h-[222px] shadow-sm rounded-lg border border-gray-200 bg-white dark:bg-gray-800 overflow-hidden",
       th: [
-        "bg-default-100",
-        "text-default-700",
+        "bg-gray-50",
+        "text-gray-700",
         "font-semibold",
+        "text-xs",
+        "uppercase",
+        "tracking-wider",
         "border-b",
-        "border-divider",
+        "border-gray-200",
         "py-4",
+        "px-6",
+        "first:rounded-tl-lg",
+        "last:rounded-tr-lg",
       ],
       td: [
         "py-4",
+        "px-6",
+        "text-sm",
+        "text-gray-800",
+        "border-b",
+        "border-gray-100",
+        "group-data-[hover=true]:bg-gray-50/50",
+        "transition-colors",
+        "duration-200",
         "group-data-[first=true]:first:before:rounded-none",
         "group-data-[first=true]:last:before:rounded-none",
+      ],
+      tr: [
+        "hover:bg-gray-50/30",
+        "transition-all",
+        "duration-200",
+        "group",
+        "border-b",
+        "border-gray-100",
+        "last:border-b-0",
       ],
     }),
     []
@@ -185,47 +208,53 @@ export default function AdminSsrTableUI({ data }: Props) {
     return (
       <div className="w-full space-y-4 pb-4">
         {admins.length === 0 ? (
-          <Card className="w-full">
+          <Card className="w-full border border-gray-200 shadow-sm rounded-lg bg-white dark:bg-gray-800">
             <CardBody className="text-center py-12">
-              <p className="text-default-500 text-lg">Aucun administrateur trouvé</p>
+              <p className="text-gray-500 text-sm font-medium">Aucun administrateur trouvé</p>
             </CardBody>
           </Card>
         ) : (
           admins.map((admin, index) => (
-            <Card key={admin.id} className="w-full shadow-md hover:shadow-lg transition-shadow">
-              <CardBody className="p-4 space-y-3">
-                <div className="flex items-center justify-between">
+            <Card key={admin.id} className="w-full shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 rounded-lg bg-white dark:bg-gray-800">
+              <CardBody className="p-5 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-200">
                   <div className="flex items-center gap-2">
-                    <span className="text-default-500 font-medium text-sm">#{index + 1}</span>
+                    <span className="text-gray-400 font-semibold text-xs">#{index + 1}</span>
                     <Chip
                       color={admin.status === "Actif" ? "success" : "warning"}
                       size="sm"
                       variant="flat"
+                      className="font-medium rounded-full px-3 py-1"
+                      classNames={{
+                        base: admin.status === "Actif" 
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
+                          : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+                      }}
                     >
                       {admin.status || "Actif"}
                     </Chip>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-default-500 mb-1">Email</p>
-                    <p className="text-sm font-medium break-all">{admin.email}</p>
+                    <p className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Email</p>
+                    <p className="text-sm font-medium text-gray-800 break-all">{admin.email}</p>
                   </div>
                   {admin.telephone && (
                     <div>
-                      <p className="text-xs text-default-500 mb-1">Téléphone</p>
-                      <p className="text-sm font-medium">{admin.telephone}</p>
+                      <p className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Téléphone</p>
+                      <p className="text-sm font-medium text-gray-700">{admin.telephone}</p>
                     </div>
                   )}
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2 border-t border-divider">
+                <div className="flex flex-col gap-2 pt-3 border-t border-gray-200">
                   <Button
                     size="sm"
                     color={admin.status === "Actif" ? "warning" : "success"}
-                    variant="flat"
-                    className="w-full"
+                    variant="solid"
+                    className="w-full font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                     onClick={() => toggleStatus(admin)}
                   >
                     {admin.status === "Actif" ? "Désactiver" : "Activer"}
@@ -234,8 +263,8 @@ export default function AdminSsrTableUI({ data }: Props) {
                     <Button
                       size="sm"
                       color="primary"
-                      variant="flat"
-                      className="flex-1"
+                      variant="solid"
+                      className="flex-1 font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                       onClick={() => openUpdateModal(admin)}
                     >
                       Modifier
@@ -243,8 +272,8 @@ export default function AdminSsrTableUI({ data }: Props) {
                     <Button
                       size="sm"
                       color="danger"
-                      variant="flat"
-                      className="flex-1"
+                      variant="solid"
+                      className="flex-1 font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                       onClick={() => openDeleteModal(admin)}
                     >
                       Supprimer
@@ -305,7 +334,7 @@ export default function AdminSsrTableUI({ data }: Props) {
   // Vue desktop (tableau)
   return (
     <div className="w-full">
-      <div className="rounded-lg border border-divider overflow-hidden">
+      <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm bg-white dark:bg-gray-800">
         <Table
           aria-label="Liste des Administrateurs"
           isStriped
@@ -314,55 +343,76 @@ export default function AdminSsrTableUI({ data }: Props) {
         >
           <TableHeader>
             {columns.map((col) => (
-              <TableColumn key={col.uid} className="text-sm">
+              <TableColumn 
+                key={col.uid} 
+                className="text-xs font-semibold uppercase tracking-wider text-gray-700"
+              >
                 {col.name}
               </TableColumn>
             ))}
           </TableHeader>
-          <TableBody emptyContent="Aucun administrateur trouvé">
+          <TableBody 
+            emptyContent={
+              <div className="flex flex-col items-center justify-center py-16">
+                <p className="text-gray-500 text-sm font-medium">Aucun administrateur trouvé</p>
+              </div>
+            }
+          >
             {admins.map((admin, index) => (
-              <TableRow key={admin.id}>
-                <TableCell>
-                  <span className="text-default-600 font-medium">{index + 1}</span>
+              <TableRow 
+                key={admin.id}
+                className="group hover:bg-gray-50/50 transition-colors duration-200 border-b border-gray-100 last:border-b-0"
+              >
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-500 font-medium text-sm">#{index + 1}</span>
                 </TableCell>
-                <TableCell>
-                  <span className="text-default-700 break-all">{admin.email}</span>
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-800 break-all font-medium text-sm">{admin.email}</span>
                 </TableCell>
-                <TableCell>
-                  <span className="text-default-700">{admin.telephone || "-"}</span>
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-600 text-sm">{admin.telephone || "-"}</span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-6">
                   <Chip
                     color={admin.status === "Actif" ? "success" : "warning"}
                     size="sm"
                     variant="flat"
+                    className="font-medium rounded-full px-3 py-1"
+                    classNames={{
+                      base: admin.status === "Actif" 
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
+                        : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+                    }}
                   >
                     {admin.status || "Actif"}
                   </Chip>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-6">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       size="sm"
                       color={admin.status === "Actif" ? "warning" : "success"}
-                      variant="flat"
+                      variant="solid"
                       onClick={() => toggleStatus(admin)}
+                      className="font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                     >
                       {admin.status === "Actif" ? "Désactiver" : "Activer"}
                     </Button>
                     <Button
                       size="sm"
                       color="primary"
-                      variant="flat"
+                      variant="solid"
                       onClick={() => openUpdateModal(admin)}
+                      className="font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                     >
                       Modifier
                     </Button>
                     <Button
                       size="sm"
                       color="danger"
-                      variant="flat"
+                      variant="solid"
                       onClick={() => openDeleteModal(admin)}
+                      className="font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                     >
                       Supprimer
                     </Button>

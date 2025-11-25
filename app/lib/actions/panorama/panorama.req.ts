@@ -64,15 +64,15 @@ export const uploadPanoramaApi = async (formData: FormData) => {
 
 /**
  * Récupère tous les panoramas avec pagination et filtrage par type
- * @param type - Type de panorama (ex: "New-testament", "Old-testament", etc.)
+ * @param type - Type de panorama (nombre, ex: 10) ou string
  * @param page - Numéro de page (défaut: 1)
- * @param limit - Nombre d'éléments par page (défaut: 50)
+ * @param limit - Nombre d'éléments par page (défaut: 10)
  * @returns Liste paginée des panoramas normalisée
  */
 export const getAllPanoramasApi = async (
-  type?: string,
+  type?: string | number,
   page: number = 1,
-  limit: number = 50
+  limit: number = 10
 ): Promise<any[]> => {
   try {
     // Construire les paramètres de requête
@@ -81,9 +81,9 @@ export const getAllPanoramasApi = async (
       limit: limit.toString(),
     });
 
-    // Ajouter le type si fourni
-    if (type) {
-      params.append("type", type);
+    // Ajouter le type si fourni (peut être un nombre ou une string)
+    if (type !== undefined && type !== null) {
+      params.append("type", type.toString());
     }
 
     // Utiliser la route /panorama/all avec les paramètres

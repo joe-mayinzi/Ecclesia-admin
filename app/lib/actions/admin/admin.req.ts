@@ -144,5 +144,37 @@ export const getAudioStatsApi = async () => {
   return audios;
 };
 
+/**
+ * Marquer un signalement comme résolu
+ * @param signalementId - ID du signalement à marquer comme résolu
+ * @returns La réponse du serveur
+ */
+export const resolveSignalementApi = async (signalementId: number) => {
+  try {
+    // Utiliser la route API Next.js qui gère la persistance
+    const res = await fetch(`/api/signalement/${signalementId}/resolve`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ message: "Erreur inconnue" }));
+      throw new Error(errorData.message || "Erreur lors de la résolution du signalement");
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Erreur lors de la résolution du signalement";
+    console.error("resolveSignalementApi:", error);
+    throw new Error(errorMessage);
+  }
+};
+
 
 

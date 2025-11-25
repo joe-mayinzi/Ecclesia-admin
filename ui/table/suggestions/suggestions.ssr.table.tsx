@@ -59,6 +59,16 @@ interface Suggestion {
 
 type Props = { data: Suggestion[] };
 
+// Fonction pour extraire les initiales (2 premières lettres)
+const getInitials = (nom?: string, prenom?: string): string => {
+  if (!nom && !prenom) return "U";
+  
+  const firstLetter = nom?.charAt(0)?.toUpperCase() || "";
+  const secondLetter = prenom?.charAt(0)?.toUpperCase() || nom?.charAt(1)?.toUpperCase() || "";
+  
+  return (firstLetter + secondLetter).slice(0, 2) || "U";
+};
+
 export default function SuggestionsSsrTableUI({ data }: Props) {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -103,7 +113,6 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
     try {
       await respondToUserSuggestion(selectedSuggestion.id, {
         message: reply.trim(),
-        suggestionId: selectedSuggestion.id,
       });
 
       // Mettre à jour localement
@@ -144,22 +153,45 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
     }
   };
 
-  // Styles pour la table
+  // Styles pour la table - Inspiré du design TailAdmin
   const tableClassNames = useMemo(
     () => ({
-      wrapper: "min-h-[222px] shadow-sm",
+      wrapper: "min-h-[222px] shadow-sm rounded-lg border border-gray-200 bg-white dark:bg-gray-800 overflow-hidden",
       th: [
-        "bg-default-100",
-        "text-default-700",
+        "bg-gray-50",
+        "text-gray-700",
         "font-semibold",
+        "text-xs",
+        "uppercase",
+        "tracking-wider",
         "border-b",
-        "border-divider",
+        "border-gray-200",
         "py-4",
+        "px-6",
+        "first:rounded-tl-lg",
+        "last:rounded-tr-lg",
       ],
       td: [
         "py-4",
+        "px-6",
+        "text-sm",
+        "text-gray-800",
+        "border-b",
+        "border-gray-100",
+        "group-data-[hover=true]:bg-gray-50/50",
+        "transition-colors",
+        "duration-200",
         "group-data-[first=true]:first:before:rounded-none",
         "group-data-[first=true]:last:before:rounded-none",
+      ],
+      tr: [
+        "hover:bg-gray-50/30",
+        "transition-all",
+        "duration-200",
+        "group",
+        "border-b",
+        "border-gray-100",
+        "last:border-b-0",
       ],
     }),
     []
@@ -190,54 +222,58 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
     return (
       <div className="w-full space-y-4 pb-4">
         {suggestions.length === 0 ? (
-          <Card className="w-full">
+          <Card className="w-full border border-gray-200 shadow-sm rounded-lg bg-white dark:bg-gray-800">
             <CardBody className="text-center py-12">
-              <p className="text-default-500 text-lg">Aucune suggestion trouvée</p>
+              <p className="text-gray-500 text-sm font-medium">Aucune suggestion trouvée</p>
             </CardBody>
           </Card>
         ) : (
           suggestions.map((suggestion, index) => (
             <Card
               key={suggestion.id}
-              className="w-full shadow-md hover:shadow-lg transition-shadow"
+              className="w-full shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 rounded-lg bg-white dark:bg-gray-800"
             >
-              <CardBody className="p-4 space-y-3">
-                <div className="flex items-center justify-between">
+              <CardBody className="p-5 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-200">
                   <div className="flex items-center gap-2">
-                    <span className="text-default-500 font-medium text-sm">
+                    <span className="text-gray-400 font-semibold text-xs">
                       #{index + 1}
                     </span>
                     {suggestion.responses && suggestion.responses.length > 0 && (
-                      <Chip color="success" size="sm" variant="flat">
+                      <Chip 
+                        color="success" 
+                        size="sm" 
+                        variant="flat"
+                        className="font-medium rounded-full px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      >
                         {suggestion.responses.length} réponse
                         {suggestion.responses.length > 1 ? "s" : ""}
                       </Chip>
                     )}
                   </div>
-                  <span className="text-xs text-default-400">
+                  <span className="text-xs text-gray-500 font-medium">
                     {formatRelativeDate(suggestion.createdAt)}
                   </span>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <Avatar
-                    src={suggestion.userSuggestion?.profil}
                     name={
                       suggestion.userSuggestion
-                        ? `${suggestion.userSuggestion.nom} ${suggestion.userSuggestion.prenom}`
+                        ? getInitials(suggestion.userSuggestion.nom, suggestion.userSuggestion.prenom)
                         : "U"
                     }
                     size="sm"
-                    className="flex-shrink-0"
+                    className="flex-shrink-0 bg-primary text-white font-semibold"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-default-700">
+                    <p className="text-sm font-medium text-gray-800">
                       {suggestion.userSuggestion
                         ? `${suggestion.userSuggestion.nom} ${suggestion.userSuggestion.prenom}`
                         : "Utilisateur inconnu"}
                     </p>
                     {suggestion.userSuggestion?.email && (
-                      <p className="text-xs text-default-500 break-all">
+                      <p className="text-xs text-gray-500 break-all mt-0.5">
                         {suggestion.userSuggestion.email}
                       </p>
                     )}
@@ -245,29 +281,29 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs text-default-500 mb-1">Suggestion</p>
-                  <p className="text-sm text-default-700 whitespace-pre-wrap break-words">
+                  <p className="text-xs text-gray-500 mb-1.5 font-medium uppercase tracking-wide">Suggestion</p>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap break-words leading-relaxed">
                     {suggestion.suggestion}
                   </p>
                 </div>
 
                 {suggestion.responses && suggestion.responses.length > 0 && (
-                  <div className="space-y-2 pt-2 border-t border-divider">
-                    <p className="text-xs text-default-500 font-semibold">
+                  <div className="space-y-2 pt-3 border-t border-gray-200">
+                    <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">
                       Réponses ({suggestion.responses.length})
                     </p>
                     {suggestion.responses.map((response, idx) => (
-                      <div key={idx} className="bg-default-50 p-2 rounded text-xs">
-                        <p className="text-default-600 mb-1">
+                      <div key={idx} className="bg-gray-50 p-3 rounded-lg text-xs border border-gray-100">
+                        <p className="text-gray-600 mb-1.5 font-medium">
                           <strong>
                             {response.responder.nom} {response.responder.prenom}
                           </strong>
                           {" • "}
-                          <span className="text-default-400">
+                          <span className="text-gray-400 font-normal">
                             {formatRelativeDate(response.createdAt)}
                           </span>
                         </p>
-                        <p className="text-default-700 whitespace-pre-wrap">
+                        <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
                           {response.message}
                         </p>
                       </div>
@@ -275,12 +311,12 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-divider">
+                <div className="pt-3 border-t border-gray-200">
                   <Button
                     size="sm"
                     color="primary"
-                    variant="flat"
-                    className="w-full"
+                    variant="solid"
+                    className="w-full font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                     onClick={() => openReplyModal(suggestion)}
                   >
                     Répondre
@@ -347,9 +383,11 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
               </Button>
               <Button
                 color="primary"
+                variant="solid"
                 onPress={handleSendReply}
                 isLoading={isSubmitting}
                 isDisabled={!reply.trim()}
+                className="font-medium text-white transition-all hover:opacity-90"
               >
                 Envoyer
               </Button>
@@ -363,7 +401,7 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
   // Vue desktop (tableau)
   return (
     <div className="w-full">
-      <div className="rounded-lg border border-divider overflow-hidden">
+      <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm bg-white dark:bg-gray-800">
         <Table
           aria-label="Liste des Suggestions"
           isStriped
@@ -372,70 +410,93 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
         >
           <TableHeader>
             {columns.map((col) => (
-              <TableColumn key={col.uid} className="text-sm">
+              <TableColumn 
+                key={col.uid} 
+                className="text-xs font-semibold uppercase tracking-wider text-gray-700"
+              >
                 {col.name}
               </TableColumn>
             ))}
           </TableHeader>
-          <TableBody emptyContent="Aucune suggestion trouvée">
+          <TableBody 
+            emptyContent={
+              <div className="flex flex-col items-center justify-center py-16">
+                <p className="text-gray-500 text-sm font-medium">Aucune suggestion trouvée</p>
+              </div>
+            }
+          >
             {suggestions.map((suggestion, index) => (
-              <TableRow key={suggestion.id}>
-                <TableCell>
-                  <span className="text-default-600 font-medium">{index + 1}</span>
+              <TableRow 
+                key={suggestion.id}
+                className="group hover:bg-gray-50/50 transition-colors duration-200 border-b border-gray-100 last:border-b-0"
+              >
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-500 font-medium text-sm">#{index + 1}</span>
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
+                <TableCell className="py-4 px-6">
+                  <div className="flex items-center gap-3">
                     <Avatar
-                      src={suggestion.userSuggestion?.profil}
                       name={
                         suggestion.userSuggestion
-                          ? `${suggestion.userSuggestion.nom} ${suggestion.userSuggestion.prenom}`
+                          ? getInitials(suggestion.userSuggestion.nom, suggestion.userSuggestion.prenom)
                           : "U"
                       }
                       size="sm"
+                      className="flex-shrink-0 bg-primary text-white font-semibold"
                     />
-                    <div className="flex flex-col">
-                      <span className="text-default-700 font-medium text-sm">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-gray-800 font-medium text-sm truncate">
                         {suggestion.userSuggestion
                           ? `${suggestion.userSuggestion.nom} ${suggestion.userSuggestion.prenom}`
                           : "Utilisateur inconnu"}
                       </span>
                       {suggestion.userSuggestion?.email && (
-                        <span className="text-xs text-default-500">
+                        <span className="text-xs text-gray-500 truncate">
                           {suggestion.userSuggestion.email}
                         </span>
                       )}
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <p className="text-default-700 text-sm max-w-md line-clamp-2">
+                <TableCell className="py-4 px-6">
+                  <p className="text-gray-700 text-sm max-w-md line-clamp-2">
                     {suggestion.suggestion}
                   </p>
                 </TableCell>
-                <TableCell>
-                  <span className="text-default-600 text-sm">
+                <TableCell className="py-4 px-6">
+                  <span className="text-gray-600 text-sm">
                     {formatRelativeDate(suggestion.createdAt)}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-6">
                   {suggestion.responses && suggestion.responses.length > 0 ? (
-                    <Chip color="success" size="sm" variant="flat">
+                    <Chip 
+                      color="success" 
+                      size="sm" 
+                      variant="flat"
+                      className="font-medium rounded-full px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    >
                       {suggestion.responses.length} réponse
                       {suggestion.responses.length > 1 ? "s" : ""}
                     </Chip>
                   ) : (
-                    <Chip color="default" size="sm" variant="flat">
+                    <Chip 
+                      color="default" 
+                      size="sm" 
+                      variant="flat"
+                      className="font-medium rounded-full px-3 py-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                    >
                       Aucune réponse
                     </Chip>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-6">
                   <Button
                     size="sm"
                     color="primary"
-                    variant="flat"
+                    variant="solid"
                     onClick={() => openReplyModal(suggestion)}
+                    className="font-medium text-xs h-8 px-4 text-white transition-all hover:opacity-90"
                   >
                     Répondre
                   </Button>
@@ -461,7 +522,7 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
           <ModalHeader className="flex flex-col gap-1">
             <h3>Répondre à la suggestion</h3>
             {selectedSuggestion?.userSuggestion && (
-              <p className="text-sm font-normal text-default-500">
+              <p className="text-sm font-normal text-gray-500">
                 {selectedSuggestion.userSuggestion.nom}{" "}
                 {selectedSuggestion.userSuggestion.prenom}
               </p>
@@ -471,8 +532,8 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
             {selectedSuggestion && (
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-default-500 mb-2">Suggestion originale :</p>
-                  <p className="text-sm text-default-700 bg-default-50 p-3 rounded whitespace-pre-wrap">
+                  <p className="text-sm text-gray-500 mb-2">Suggestion originale :</p>
+                  <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded whitespace-pre-wrap">
                     {selectedSuggestion.suggestion}
                   </p>
                 </div>
@@ -502,9 +563,11 @@ export default function SuggestionsSsrTableUI({ data }: Props) {
             </Button>
             <Button
               color="primary"
+              variant="solid"
               onPress={handleSendReply}
               isLoading={isSubmitting}
               isDisabled={!reply.trim()}
+              className="font-medium text-white transition-all hover:opacity-90"
             >
               Envoyer
             </Button>

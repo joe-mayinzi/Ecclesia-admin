@@ -21,41 +21,61 @@ export default async function DashboardPage() {
       getSuggestionsApi(1, 1000), // Récupérer un grand nombre pour compter
     ]);
 
-    // Compter les utilisateurs
-    let totalUsers = 0;
-    if (Array.isArray(usersResult)) {
-      totalUsers = usersResult.length;
-    } else if (usersResult?.data && Array.isArray(usersResult.data)) {
-      totalUsers = usersResult.data.length;
-    } else if (usersResult?.meta?.total) {
-      totalUsers = usersResult.meta.total;
-    }
+    // Logs de débogage (à retirer en production si nécessaire)
+    console.log("Users result structure:", {
+      isArray: Array.isArray(usersResult),
+      hasData: !!usersResult?.data,
+      hasMeta: !!usersResult?.meta,
+      metaTotal: usersResult?.meta?.total,
+      dataLength: Array.isArray(usersResult?.data) ? usersResult.data.length : null,
+      directLength: Array.isArray(usersResult) ? usersResult.length : null,
+    });
+    console.log("Admins result structure:", {
+      isArray: Array.isArray(adminsResult),
+      hasData: !!adminsResult?.data,
+      hasMeta: !!adminsResult?.meta,
+      metaTotal: adminsResult?.meta?.total,
+      dataLength: Array.isArray(adminsResult?.data) ? adminsResult.data.length : null,
+      directLength: Array.isArray(adminsResult) ? adminsResult.length : null,
+    });
 
-    // Compter les admins
-    let totalAdmins = 0;
-    if (Array.isArray(adminsResult)) {
-      totalAdmins = adminsResult.length;
-    } else if (adminsResult?.data && Array.isArray(adminsResult.data)) {
-      totalAdmins = adminsResult.data.length;
-    } else if (adminsResult?.meta?.total) {
-      totalAdmins = adminsResult.meta.total;
-    }
+    // Fonction helper pour extraire le total d'une réponse paginée
+    const getTotalFromResponse = (response: any): number => {
+      // Priorité 1: meta.total (le vrai total)
+      if (response?.meta?.total !== undefined && typeof response.meta.total === 'number') {
+        return response.meta.total;
+      }
+      // Priorité 2: total direct
+      if (response?.total !== undefined && typeof response.total === 'number') {
+        return response.total;
+      }
+      // Priorité 3: compter les éléments dans data
+      if (response?.data && Array.isArray(response.data)) {
+        return response.data.length;
+      }
+      // Priorité 4: compter les éléments si c'est un tableau direct
+      if (Array.isArray(response)) {
+        return response.length;
+      }
+      // Priorité 5: autres structures possibles
+      if (response?.suggestions && Array.isArray(response.suggestions)) {
+        return response.suggestions.length;
+      }
+      return 0;
+    };
+
+    // Compter les utilisateurs (prioriser meta.total)
+    const totalUsers = getTotalFromResponse(usersResult);
+
+    // Compter les admins (prioriser meta.total)
+    const totalAdmins = getTotalFromResponse(adminsResult);
 
     // Compter les vidéos et audios
-    const totalVideos = Array.isArray(videos) ? videos.length : 0;
-    const totalAudios = Array.isArray(audios) ? audios.length : 0;
+    const totalVideos = getTotalFromResponse(videos);
+    const totalAudios = getTotalFromResponse(audios);
 
-    // Compter les suggestions
-    let totalSuggestions = 0;
-    if (Array.isArray(suggestionsResult)) {
-      totalSuggestions = suggestionsResult.length;
-    } else if (suggestionsResult?.data && Array.isArray(suggestionsResult.data)) {
-      totalSuggestions = suggestionsResult.data.length;
-    } else if (suggestionsResult?.meta?.total) {
-      totalSuggestions = suggestionsResult.meta.total;
-    } else if (suggestionsResult?.suggestions && Array.isArray(suggestionsResult.suggestions)) {
-      totalSuggestions = suggestionsResult.suggestions.length;
-    }
+    // Compter les suggestions (prioriser meta.total)
+    const totalSuggestions = getTotalFromResponse(suggestionsResult);
 
     // Récupérer tous les signalements (tous types confondus)
     let totalSignals = 0;
@@ -64,8 +84,7 @@ export default async function DashboardPage() {
       const signalPromises = signalTypes.map(type => getSignalesApi(type, 1, 1000));
       const allSignals = await Promise.all(signalPromises);
       totalSignals = allSignals.reduce((sum, signals) => {
-        const count = Array.isArray(signals) ? signals.length : 0;
-        return sum + count;
+        return sum + getTotalFromResponse(signals);
       }, 0);
     } catch (error) {
       console.error("Erreur lors de la récupération des signalements:", error);
@@ -79,6 +98,9 @@ export default async function DashboardPage() {
       totalSignals,
       totalSuggestions,
     };
+
+    // Log des totaux calculés pour débogage
+    console.log("Stats calculées:", stats);
 
     return <DashboardClient stats={stats} />;
   } catch (error) {

@@ -13,7 +13,6 @@ export default async function SignalementsAudio() {
   const res = await getSignalesApi("audios", 1, 1000);
 
   const signalements = Array.isArray(res) ? res : [];
-  console.log("Signalements audio fetchés :", signalements);
 
   if (signalements.length === 0) {
     return (

@@ -49,7 +49,6 @@ export function CardSuggestionsUI({id, userSuggestionId, user, content, date, re
     try {
       await respondToUserSuggestion(id, {
         message: reply,
-        suggestionId: userSuggestionId,
       });
       
       setReply("");
